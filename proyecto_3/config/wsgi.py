@@ -14,3 +14,10 @@ from django.core.wsgi import get_wsgi_application
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings')
 
 application = get_wsgi_application()
+
+# Intentar crear un superusuario a partir de las variables de entorno al iniciar.
+try:
+    from config.startup import create_default_superuser
+    create_default_superuser()
+except Exception:
+    pass
