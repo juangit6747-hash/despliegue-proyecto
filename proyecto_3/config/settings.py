@@ -84,17 +84,11 @@ WSGI_APPLICATION = 'config.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': _env('DB_NAME', 'proyecto'),
-        'USER': _env('DB_USER', 'root'),
-        'PASSWORD': _env('DB_PASSWORD', 'aprendermysql123',),
-        'HOST': 'db' if _is_docker_compose() else _env('DB_HOST', '127.0.0.1'),
-        'PORT': '3306' if _is_docker_compose() else _env('DB_PORT', '3307'),
-        'OPTIONS': {
-            'init_command': "SET time_zone = '-05:00'",
-        },
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
+
 AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
     {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator'},
