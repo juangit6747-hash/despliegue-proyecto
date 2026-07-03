@@ -1,0 +1,107 @@
+/*
+ * tokens.css — Design Tokens globales
+ * Tema: SaaS Pro Dark — Tienda El Despecho
+ * Versión: 2.0.0  |  Autor: Johan S. Contreras — mayo 2026
+ *
+ * REGLA: ÚNICO archivo con :root. No repetir en otros CSS.
+ * Cargar PRIMERO en base.html.
+ */
+
+
+
+/* Fuentes del sistema — sin dependencia externa */
+:root {
+  /* ── Paleta principal ── */
+  --c-red:          #c0392b;
+  --c-red-d:        #96281b;
+  --c-red-l:        rgba(192, 57, 43, 0.14);
+  --c-red-glow:     rgba(192, 57, 43, 0.22);
+
+  --c-gold:         #e8a838;
+  --c-gold-d:       #c4891e;
+  --c-gold-l:       rgba(232, 168, 56, 0.13);
+
+  /* ── Semánticos ── */
+  --c-success:      #27ae60;
+  --c-success-d:    #1e8449;
+  --c-success-l:    rgba(39, 174, 96, 0.13);
+
+  --c-warning:      #d4ac0d;
+  --c-warning-l:    rgba(212, 172, 13, 0.13);
+
+  --c-danger:       #e74c3c;
+  --c-danger-l:     rgba(231, 76, 60, 0.13);
+
+  --c-info:         #2980b9;
+  --c-info-d:       #1a5276;
+  --c-info-l:       rgba(41, 128, 185, 0.13);
+
+  --c-purple:       #8e44ad;
+  --c-cyan:         #0097a7;
+
+  /* ── Fondos ── */
+  --bg-body:        #242d39;
+  --bg-surface:     rgba(34, 41, 54, 0.85);
+  --bg-card:        rgba(50, 57, 69, 0.9);
+  --bg-card-hover:  rgba(34, 42, 57, 0.95);
+  --bg-input:       rgba(30, 40, 57, 0.8);
+  --bg-sidebar:     rgba(31, 39, 54, 0.96);
+  --bg-header:      rgba(29, 35, 47, 0.95);
+  --bg-glass:       rgba(61, 37, 37, 0.03);
+  --bg-glass-hover: rgba(255, 255, 255, 0.06);
+
+  /* ── Textos ── */
+  --tx-primary:     #f0f4ff;
+  --tx-secondary:   #8899bb;
+  --tx-muted:       #4a5568;
+  --tx-accent:      var(--c-gold);
+
+  /* ── Bordes ── */
+  --bd-default:     rgba(255,255,255,0.07);
+  --bd-subtle:      rgba(255,255,255,0.04);
+  --bd-active:      rgba(192, 57, 43, 0.50);
+  --bd-gold:        rgba(232, 168, 56, 0.30);
+
+  /* ── Tipografía ── */
+  --font-display:   'Segoe UI', system-ui, -apple-system, sans-serif;
+  --font-body:      'Segoe UI', system-ui, -apple-system, sans-serif;
+  --font-mono:      'JetBrains Mono', 'Fira Code', monospace;
+
+  /* ── Radios ── */
+  --r-xs:   6px;
+  --r-sm:   10px;
+  --r-md:   14px;
+  --r-lg:   20px;
+  --r-xl:   28px;
+  --r-full: 999px;
+
+  /* ── Sombras ── */
+  --sh-sm:   0 2px 8px rgba(0,0,0,0.30);
+  --sh-md:   0 8px 24px rgba(0,0,0,0.40);
+  --sh-lg:   0 20px 60px rgba(0,0,0,0.55);
+  --sh-xl:   0 32px 80px rgba(0,0,0,0.65);
+  --sh-red:  0 0 30px rgba(192,57,43,0.25);
+  --sh-gold: 0 0 24px rgba(232,168,56,0.20);
+
+  /* ── Layout ── */
+  --sidebar-w:   255px;
+  --header-h:    70px;
+  --content-pad: 32px;
+
+  /* ── Espaciado ── */
+  --sp-xs:  4px;
+  --sp-sm:  8px;
+  --sp-md:  16px;
+  --sp-lg:  24px;
+  --sp-xl:  36px;
+  --sp-2xl: 52px;
+
+  /* ── Transiciones ── */
+  --tr-fast:   0.13s ease;
+  --tr-base:   0.22s ease;
+  --tr-slow:   0.38s cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* ── Glassmorphism ── */
+  --glass-blur:   blur(20px) saturate(160%);
+  --glass-blur-sm: blur(10px) saturate(140%);
+}

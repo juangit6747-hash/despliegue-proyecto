@@ -1,0 +1,192 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Inventario - Grupo 3</title>
+    <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">
+    <link rel="stylesheet" href="{% static 'css/all.min.css' %}">
+    <link rel="stylesheet" href="{% static 'css/estilos_pagina.css' %}">
+    <script src="{% static 'js/sweetalert2.min.js' %}"></script>
+    <style>
+        #sidebar {
+            width: 250px;
+            min-height: 100vh;
+            transition: width 0.3s ease;
+            overflow: hidden;
+            flex-shrink: 0;
+        }
+        #sidebar.collapsed { width: 60px; }
+        #sidebar .link-text {
+            transition: opacity 0.3s ease;
+            white-space: nowrap;
+        }
+        #sidebar.collapsed .link-text {
+            opacity: 0;
+            width: 0;
+            overflow: hidden;
+        }
+        #sidebar.collapsed h4,
+        #sidebar.collapsed .sidebar-title { display: none; }
+        #sidebar a {
+            padding: 10px 8px;
+            border-radius: 6px;
+            transition: background 0.2s;
+        }
+        #sidebar a:hover { background-color: rgba(255,255,255,0.1); }
+        #sidebar a i { min-width: 24px; text-align: center; }
+        #toggle-btn {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.2rem;
+            cursor: pointer;
+            padding: 4px 8px;
+            border-radius: 4px;
+        }
+        #toggle-btn:hover { background-color: rgba(255,255,255,0.1); }
+        #main-content { transition: margin-left 0.3s ease; flex: 1; min-width: 0; }
+    </style>
+</head>
+<body>
+
+<nav class="navbar navbar-dark bg-dark">
+    <div class="container-fluid">
+        <span class="navbar-brand mb-0 h1">
+            <i class="fa-solid fa-shop me-2"></i>Sistema de Inventario
+        </span>
+        <div class="d-flex align-items-center">
+            {% if request.user.is_authenticated %}
+                <span class="text-light me-3">
+                    <i class="fa-solid fa-user me-1"></i>
+                    {{ request.user.get_full_name|default:request.user.username }}
+                </span>
+                <a href="{% url 'logout' %}" class="btn btn-outline-light btn-sm">
+                    <i class="fa-solid fa-right-from-bracket me-1"></i>Cerrar Sesión
+                </a>
+            {% else %}
+                <a href="{% url 'login' %}" class="btn btn-light btn-sm">
+                    <i class="fa-solid fa-right-to-bracket me-1"></i>Iniciar Sesión
+                </a>
+            {% endif %}
+        </div>
+    </div>
+</nav>
+
+<div class="d-flex">
+
+    <!-- ═══ MENÚ LATERAL ═══ -->
+    <aside id="sidebar" class="bg-dark text-light p-3">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h4 class="mb-0 sidebar-title">Inventario</h4>
+            <button id="toggle-btn" title="Ocultar menú">
+                <i class="fa-solid fa-bars"></i>
+            </button>
+        </div>
+
+        <a href="{% url 'inicio' %}" class="d-flex align-items-center text-light mb-2 text-decoration-none">
+            <i class="fa-solid fa-house"></i>
+            <span class="link-text ms-2">Inicio</span>
+        </a>
+        <a href="{% url 'productos' %}" class="d-flex align-items-center text-light mb-2 text-decoration-none">
+            <i class="fa-solid fa-box"></i>
+            <span class="link-text ms-2">Productos</span>
+        </a>
+        <a href="{% url 'clientes' %}" class="d-flex align-items-center text-light mb-2 text-decoration-none">
+            <i class="fa-solid fa-users"></i>
+            <span class="link-text ms-2">Clientes</span>
+        </a>
+        <a href="{% url 'ventas' %}" class="d-flex align-items-center text-light mb-2 text-decoration-none">
+            <i class="fa-solid fa-cart-shopping"></i>
+            <span class="link-text ms-2">Ventas</span>
+        </a>
+        <a href="{% url 'proveedores' %}" class="d-flex align-items-center text-light mb-2 text-decoration-none">
+            <i class="fa-solid fa-truck"></i>
+            <span class="link-text ms-2">Proveedores</span>
+        </a>
+        <a href="{% url 'compras' %}" class="d-flex align-items-center text-light mb-2 text-decoration-none">
+            <i class="fa-solid fa-bag-shopping"></i>
+            <span class="link-text ms-2">Compras</span>
+        </a>
+        <a href="{% url 'reportes' %}" class="d-flex align-items-center text-light mb-2 text-decoration-none">
+            <i class="fa-solid fa-chart-line"></i>
+            <span class="link-text ms-2">Reportes</span>
+        </a>
+        <a href="{% url 'backup' %}" class="d-flex align-items-center text-light mb-2 text-decoration-none">
+            <i class="fa-solid fa-database"></i>
+            <span class="link-text ms-2">Respaldo BD</span>
+        </a>
+
+        {% if request.user.is_superuser %}
+        <hr class="border-secondary my-2">
+        <a href="{% url 'usuarios:listar' %}" class="d-flex align-items-center text-light mb-2 text-decoration-none">
+            <i class="fa-solid fa-users-gear"></i>
+            <span class="link-text ms-2">Usuarios</span>
+        </a>
+        {% endif %}
+    </aside>
+    <!-- ═══ FIN MENÚ ═══ -->
+
+    <!-- ═══ CONTENIDO PRINCIPAL ═══ -->
+    <main id="main-content" class="p-4">
+        {# block content → usado por todos los templates de app/ #}
+        {% block content %}
+        {# block contenido → usado por los templates de usuarios/ #}
+        {% block contenido %}{% endblock %}
+        {% endblock %}
+    </main>
+
+</div>
+
+<footer class="bg-dark text-light text-center py-2">
+    <small>Proyecto Inventario - Grupo 3 © 2025</small>
+</footer>
+
+
+<script src="{% static 'js/confirmaciones.js' %}"></script>
+
+<script>
+    const toggleBtn = document.getElementById('toggle-btn');
+    const sidebar   = document.getElementById('sidebar');
+    toggleBtn.addEventListener('click', () => {
+        sidebar.classList.toggle('collapsed');
+        const icon = toggleBtn.querySelector('i');
+        if (sidebar.classList.contains('collapsed')) {
+            icon.classList.replace('fa-bars', 'fa-bars-staggered');
+        } else {
+            icon.classList.replace('fa-bars-staggered', 'fa-bars');
+        }
+    });
+</script>
+
+{% if messages %}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const mensajes = [
+        {% for message in messages %}
+        { tipo: "{{ message.tags }}", texto: "{{ message|escapejs }}" }{% if not forloop.last %},{% endif %}
+        {% endfor %}
+    ];
+    const iconMap  = { success: 'success', error: 'error', warning: 'warning', info: 'info', debug: 'info' };
+    const titleMap = { success: '¡Listo!', error: '¡Error!', warning: '¡Atención!', info: '¡Info!' };
+    mensajes.forEach(function (msg) {
+        Swal.fire({
+            icon:               iconMap[msg.tipo]  || 'info',
+            title:              titleMap[msg.tipo] || '¡Atención!',
+            text:               msg.texto,
+            confirmButtonText:  'OK',
+            confirmButtonColor: '#28a745',
+        });
+    });
+});
+</script>
+{% endif %}
+
+{# block extra_js → usado por tipos, unidades, marcas, ventas de app/ #}
+{% block extra_js %}{% endblock %}
+
+{# block js → usado por crear.html y listar.html de usuarios/ #}
+{% block js %}{% endblock %}
+
+</body>
+</html>

@@ -1,0 +1,106 @@
+<!-- Modal Agregar -->
+<div class="modal fade" id="modalAgregar" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="fa-solid fa-plus me-2"></i>Agregar Nuevo Producto</h5>
+                <button type="button" class="btn-close btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="POST" action="{% url 'crear_producto' %}" id="formAgregarProducto">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <!-- Campo oculto codigo de barras — lo llena el escaner -->
+                    <input type="hidden" name="codigo_barras" id="add_codigo_barras" value="">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-semibold">Nombre del Producto <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" name="nombre" required
+                                   value="{{ form_data.nombre }}"
+                                   oninput="bloquearNumeros(this, 'add_nombre_error')"
+                                   placeholder="Ej: Arroz Diana">
+                            <div id="add_nombre_error" class="text-danger small mt-1" style="display:none;"></div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-semibold">Precio <span class="text-danger">*</span></label>
+                            <div class="input-group">
+                                <span class="input-group-text">$</span>
+                                <input type="text" inputmode="numeric" class="form-control" name="precio" required
+                                       value="{{ form_data.precio }}"
+                                       oninput="validarPrecio(this, 'add_precio_error')"
+                                       placeholder="Ej: 5000">
+                            </div>
+                            <div id="add_precio_error" class="text-danger small mt-1" style="display:none;"></div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-semibold">Stock <span class="text-danger">*</span></label>
+                            <input type="text" inputmode="numeric" class="form-control" name="stock" required
+                                   value="{{ form_data.stock }}"
+                                   oninput="validarStock(this, 'add_stock_error')"
+                                   placeholder="Ej: 100">
+                            <div id="add_stock_error" class="text-danger small mt-1" style="display:none;"></div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-semibold">Marca <span class="text-danger">*</span></label>
+                            <select class="form-select" name="idMarca" id="add_idMarca" required>
+                                <option value="">Seleccione una marca</option>
+                                {% for marca in marcas %}
+                                    <option value="{{ marca.idMarca }}"
+                                        {% if form_data.idMarca == marca.idMarca|stringformat:"s" %}selected{% endif %}>
+                                        {{ marca.nombreMarca }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                            <a href="{% url 'marcas' %}?next=productos" onclick="guardarBorrador()" class="text-success small mt-1 d-block">+ Gestionar Marcas</a>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-semibold">Tipo de Producto <span class="text-danger">*</span></label>
+                            <select class="form-select" name="idTipo" id="add_idTipo" required>
+                                <option value="">Seleccione un tipo</option>
+                                {% for tipo in tipos %}
+                                    <option value="{{ tipo.idTipo }}"
+                                        {% if form_data.idTipo == tipo.idTipo|stringformat:"s" %}selected{% endif %}>
+                                        {{ tipo.nombre_tipo }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                            <a href="{% url 'tipos' %}?next=productos" onclick="guardarBorrador()" class="text-success small mt-1 d-block">+ Gestionar Tipos</a>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-semibold">Unidad de Medida <span class="text-danger">*</span></label>
+                            <select class="form-select" name="idUnidad" id="add_idUnidad" required>
+                                <option value="">Seleccione una unidad</option>
+                                {% for unidad in unidades %}
+                                    <option value="{{ unidad.idUnidad }}"
+                                        {% if form_data.idUnidad == unidad.idUnidad|stringformat:"s" %}selected{% endif %}>
+                                        {{ unidad.nombre_unidad }} ({{ unidad.abreviatura }})
+                                    </option>
+                                {% endfor %}
+                            </select>
+                            <a href="{% url 'unidades' %}?next=productos" onclick="guardarBorrador()" class="text-success small mt-1 d-block">+ Gestionar Unidades</a>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-semibold" title="Opcional. Activa la alerta automática de vencimiento en Compras y Ventas.">
+                                Fecha de vencimiento <i class="fa-solid fa-circle-info text-muted" style="font-size:.75rem;"></i>
+                            </label>
+                            <input type="date" class="form-control" name="fecha_vencimiento"
+                                   value="{{ form_data.fecha_vencimiento }}"
+                                   title="Fecha en la que el producto vence">
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-success px-4">
+                        <i class="fa-solid fa-floppy-disk me-1"></i> Guardar Producto
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

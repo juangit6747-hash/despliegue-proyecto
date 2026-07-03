@@ -1,0 +1,76 @@
+/* ══════════════════════════════════════════════════════
+   BREADCRUMB — agregar al final de estilos_pagina.css
+   ══════════════════════════════════════════════════════ */
+
+.breadcrumb-nav {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 8px;
+  flex-wrap: wrap;
+}
+
+.breadcrumb-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: .75rem;
+  color: var(--tx-muted);
+}
+
+.breadcrumb-item a {
+  color: var(--tx-secondary);
+  text-decoration: none;
+  font-weight: 500;
+  padding: 2px 6px;
+  border-radius: var(--r-xs);
+  transition: color var(--tr-fast), background var(--tr-fast);
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.breadcrumb-item a:hover {
+  color: var(--c-gold);
+  background: var(--bg-glass-hover);
+}
+
+.breadcrumb-item.active {
+  color: var(--tx-primary);
+  font-weight: 600;
+  font-size: .75rem;
+  padding: 2px 6px;
+}
+
+.breadcrumb-separator {
+  color: var(--tx-muted);
+  font-size: .65rem;
+  opacity: .6;
+}
+
+/* Tooltip global para botones e íconos */
+[title]:not(iframe):not(input):not(select):not(textarea) {
+  position: relative;
+}
+
+.tooltip-custom {
+  position: fixed;
+  background: rgba(10, 14, 26, 0.95);
+  color: #fff;
+  padding: 5px 10px;
+  border-radius: 6px;
+  font-size: .73rem;
+  font-weight: 600;
+  white-space: nowrap;
+  pointer-events: none;
+  z-index: 99999;
+  border: 1px solid rgba(255,255,255,0.1);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+  opacity: 0;
+  transition: opacity .15s;
+  max-width: 200px;
+  white-space: normal;
+  text-align: center;
+}
+
+.tooltip-custom.visible { opacity: 1; }

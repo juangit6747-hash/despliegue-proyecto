@@ -1,0 +1,782 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>El Despecho — Login Administrativo</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        
+        :root {
+            --primary: #9b1c1c;
+            --primary-hover: #b91c1c;
+            --bg-dark: #161615;
+            --glass-bg: rgba(60, 59, 56, 0.3);
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --text-main: #f8fafc;
+            --text-muted: #9ca3af;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(150deg, #3c3b38 0%, #1b1d1b 45%, #161615 100%);
+            color: var(--text-main);
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* Efectos visuales de fondo (SaaS/IA Style) */
+        .glow-orb-1 {
+            position: absolute;
+            top: -10%; left: -10%;
+            width: 50vw; height: 50vw;
+            background: radial-gradient(circle, rgba(155, 28, 28, 0.25) 0%, transparent 60%);
+            border-radius: 50%;
+            filter: blur(80px);
+            animation: float 10s ease-in-out infinite alternate;
+            z-index: 0;
+            pointer-events: none;
+        }
+        .glow-orb-2 {
+            position: absolute;
+            bottom: -20%; right: -10%;
+            width: 40vw; height: 40vw;
+            background: radial-gradient(circle, rgba(245, 158, 11, 0.15) 0%, transparent 60%);
+            border-radius: 50%;
+            filter: blur(80px);
+            animation: float 12s ease-in-out infinite alternate-reverse;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        @keyframes float {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(5%, 5%); }
+        }
+
+        /* Tarjeta Glassmorphism */
+        .card {
+            position: relative;
+            z-index: 10;
+            width: 100%;
+            max-width: 420px;
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 24px;
+            padding: 40px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            animation: zoomFadeIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            opacity: 0;
+            transform: scale(0.95) translateY(20px);
+        }
+
+        @keyframes zoomFadeIn {
+            to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+
+        /* Cabecera */
+        .card-header {
+            text-align: center;
+            margin-bottom: 32px;
+        }
+
+        .logo-wrap {
+            width: 64px; height: 64px;
+            margin: 0 auto 20px;
+            background: linear-gradient(145deg, #7f1d1d, #9b1c1c);
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            color: #fff;
+            box-shadow: 0 10px 20px -5px rgba(155, 28, 28, 0.4);
+            overflow: hidden;
+        }
+        .logo-wrap img { width: 100%; height: 100%; object-fit: cover; border-radius: 16px; }
+
+        .card-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+            letter-spacing: -0.02em;
+        }
+        
+        .card-sub {
+            font-size: 0.875rem;
+            color: var(--text-muted);
+        }
+
+        /* Alertas */
+        .alerts { margin-bottom: 24px; }
+        .alert-item {
+            padding: 12px 16px;
+            border-radius: 12px;
+            font-size: 0.875rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 12px;
+            backdrop-filter: blur(10px);
+        }
+        .alert-item.error {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            color: #fca5a5;
+        }
+        .alert-item.success {
+            background: rgba(34, 197, 94, 0.1);
+            border: 1px solid rgba(34, 197, 94, 0.2);
+            color: #86efac;
+        }
+
+        /* Inputs */
+        .form-group {
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 0.8rem;
+            font-weight: 500;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+            transition: color 0.3s;
+        }
+
+        .input-wrap {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .input-icon {
+            position: absolute;
+            left: 16px;
+            color: #64748b;
+            font-size: 1rem;
+            transition: color 0.3s;
+        }
+
+        .input-wrap input {
+            width: 100%;
+            padding: 14px 16px 14px 44px;
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            color: var(--text-main);
+            font-size: 0.95rem;
+            font-family: inherit;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        .input-wrap input:focus {
+            background: rgba(27, 29, 27, 0.8);
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(155, 28, 28, 0.15);
+        }
+
+        .input-wrap input:focus + .input-icon,
+        .input-wrap input:focus ~ .input-icon {
+            color: var(--primary);
+        }
+
+        .input-wrap input::placeholder {
+            color: #475569;
+        }
+
+        .toggle-pass {
+            position: absolute;
+            right: 16px;
+            color: #64748b;
+            cursor: pointer;
+            transition: color 0.3s;
+        }
+        .toggle-pass:hover { color: var(--text-main); }
+
+        /* Actions & Buttons */
+        .recover-row {
+            display: flex;
+            justify-content: flex-end;
+            margin-bottom: 24px;
+        }
+
+        .recover-link {
+            background: none;
+            border: none;
+            color: var(--primary);
+            font-size: 0.85rem;
+            font-weight: 500;
+            cursor: pointer;
+            padding: 0;
+            transition: color 0.2s;
+        }
+        .recover-link:hover { color: var(--primary-hover); text-decoration: underline; }
+
+        .btn-login {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, var(--primary), var(--primary-hover));
+            color: #fff;
+            border: none;
+            border-radius: 12px;
+            font-family: inherit;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 10px 20px -5px rgba(155, 28, 28, 0.4);
+        }
+        
+        .btn-login::after {
+            content: '';
+            position: absolute;
+            top: 0; left: -100%;
+            width: 50%; height: 100%;
+            background: linear-gradient(to right, transparent, rgba(255,255,255,0.2), transparent);
+            transform: skewX(-20deg);
+            transition: left 0.5s;
+        }
+        .btn-login:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 15px 25px -5px rgba(155, 28, 28, 0.5);
+        }
+        .btn-login:hover::after { left: 150%; }
+
+        /* Card Footer */
+        .card-footer {
+            margin-top: 32px;
+            text-align: center;
+            font-size: 0.8rem;
+            color: #475569;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+        .card-footer i { color: #10b981; }
+
+        /* Modals (Adaptados a SaaS dark) */
+        .modal-overlay {
+            position: fixed; inset: 0;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(5px);
+            display: none; align-items: center; justify-content: center;
+            z-index: 100; opacity: 0; pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+        .modal-overlay.visible {
+            display: flex; opacity: 1; pointer-events: auto;
+        }
+        .modal {
+            width: min(400px, 90%);
+            background: #1b1d1b;
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);
+            animation: modalPop 0.3s ease-out forwards;
+            color: var(--text-main);
+        }
+        @keyframes modalPop {
+            from { opacity: 0; transform: scale(0.95) translateY(10px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+        .modal-header {
+            padding: 24px;
+            display: flex; align-items: center; justify-content: space-between;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+        .modal-header h3 { font-size: 1.1rem; font-weight: 600; margin: 0; }
+        .modal-close {
+            background: none; border: none; color: var(--text-muted);
+            font-size: 1.2rem; cursor: pointer; transition: color 0.2s;
+        }
+        .modal-close:hover { color: #fff; }
+        
+        .modal-body { padding: 24px; display: grid; gap: 20px; }
+        .modal-body p { color: var(--text-muted); font-size: 0.9rem; line-height: 1.5; margin: 0; }
+        
+        .modal-footer {
+            padding: 20px 24px;
+            background: rgba(0, 0, 0, 0.2);
+            display: flex; justify-content: flex-end; gap: 12px;
+        }
+        .modal-button {
+            padding: 10px 16px; border-radius: 10px; border: none; font-weight: 500; font-size: 0.9rem; cursor: pointer; transition: all 0.2s;
+        }
+        .modal-button.primary { background: var(--primary); color: #fff; }
+        .modal-button.primary:hover { background: var(--primary-hover); }
+        .modal-button.secondary { background: rgba(255,255,255,0.1); color: #fff; }
+        .modal-button.secondary:hover { background: rgba(255,255,255,0.15); }
+
+        .hidden { display: none !important; }
+
+        .status-message { font-size: 0.85rem; min-height: 1.2em; margin-top: 5px; }
+        .status-message.error { color: #fca5a5; }
+        .status-message.success { color: #86efac; }
+        
+        .strength-meter { display: grid; gap: 8px; margin-top: -10px; }
+        .strength-meter-label { display: flex; justify-content: space-between; font-size: 0.8rem; color: var(--text-muted); }
+        .meter-bar { width: 100%; height: 6px; background: rgba(255,255,255,0.1); border-radius: 999px; overflow: hidden; }
+        .meter-bar-fill { height: 100%; width: 0%; border-radius: 999px; transition: all 0.3s ease; }
+        .meter-weak { background: #ef4444; }
+        .meter-medium { background: #f59e0b; }
+        .meter-strong { background: #10b981; }
+
+        .success-message {
+            background: rgba(34, 197, 94, 0.1); border: 1px solid rgba(34, 197, 94, 0.2);
+            color: #86efac; padding: 12px; border-radius: 10px; font-size: 0.85rem; display: none;
+        }
+
+        #forgotPasswordHint { font-size: 0.85rem; text-align: center; color: var(--text-muted); margin-top: 16px; }
+    </style>
+</head>
+<body>
+
+<!-- Efectos de fondo -->
+<div class="glow-orb-1"></div>
+<div class="glow-orb-2"></div>
+
+<div class="card">
+    <div class="card-header">
+        <div class="logo-wrap">
+            <i class="fa-solid fa-cube"></i>
+        </div>
+        <div class="card-title">Bienvenido de nuevo</div>
+        <div class="card-sub">Panel Administrativo · El Despecho</div>
+    </div>
+
+    {% if messages %}
+    <div class="alerts">
+        {% for message in messages %}
+        <div class="alert-item {% if message.tags == 'error' %}error{% else %}success{% endif %}">
+            <i class="fa-solid {% if message.tags == 'error' %}fa-circle-exclamation{% else %}fa-circle-check{% endif %}"></i>
+            {{ message }}
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <form method="POST" action="{% url 'login' %}">
+        {% csrf_token %}
+
+        <div class="form-group">
+            <label class="form-label">Usuario</label>
+            <div class="input-wrap">
+                <input type="text" name="username" placeholder="Ingresa tu usuario" required autofocus autocomplete="username">
+                <i class="input-icon fa-solid fa-user"></i>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">Contraseña</label>
+            <div class="input-wrap">
+                <input type="password" name="password" id="passwordInput" placeholder="Ingresa tu contraseña" required autocomplete="current-password">
+                <i class="input-icon fa-solid fa-lock"></i>
+                <span class="toggle-pass" onclick="togglePass()">
+                    <i class="fa-solid fa-eye" id="eyeIcon"></i>
+                </span>
+            </div>
+        </div>
+
+        <div class="recover-row">
+            <button type="button" class="recover-link" id="recoverPasswordBtn" onclick="openModal('recoverModal')">
+                ¿Olvidaste tu contraseña?
+            </button>
+        </div>
+
+        <button type="submit" class="btn-login">
+            Iniciar sesión
+        </button>
+
+        <p id="forgotPasswordHint" class="hidden">
+            ¿Problemas para acceder? <button type="button" class="recover-link" id="recoverPasswordLink" onclick="openModal('recoverModal')">Recuperar contraseña</button>
+        </p>
+    </form>
+
+    <div class="card-footer">
+        <i class="fa-solid fa-shield-halved"></i>
+        Acceso seguro encriptado
+    </div>
+</div>
+
+<!-- Modal Recuperación -->
+<div class="modal-overlay" id="recoverModal" aria-hidden="true">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="recoverModalTitle">
+        <div class="modal-header">
+            <h3 id="recoverModalTitle">Recuperar acceso</h3>
+            <button type="button" class="modal-close" id="closeRecoverModal" onclick="closeModal('recoverModal')">×</button>
+        </div>
+        <div class="modal-body">
+            <p>Ingresa el correo electrónico asociado a tu cuenta para recibir un código de verificación.</p>
+            
+            <div class="form-group" style="margin-bottom:0">
+                <label class="form-label">Correo electrónico</label>
+                <div class="input-wrap">
+                    <input type="email" id="recoverEmail" placeholder="ejemplo@correo.com" autocomplete="email">
+                    <i class="input-icon fa-solid fa-envelope"></i>
+                </div>
+            </div>
+            
+            <div class="status-message" id="recoverStatus"></div>
+            
+            <div class="form-group hidden" id="verificationCodeGroup" style="margin-bottom:0; margin-top:10px;">
+                <label class="form-label">Código de seguridad</label>
+                <div class="input-wrap">
+                    <input type="text" id="recoverCode" placeholder="Ingresa el código de 6 dígitos">
+                    <i class="input-icon fa-solid fa-key"></i>
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="modal-button secondary" id="cancelRecover" onclick="closeModal('recoverModal')">Cancelar</button>
+            <button type="button" class="modal-button primary" id="sendCodeBtn" onclick="recoverSendCode()">Enviar código</button>
+            <button type="button" class="modal-button primary hidden" id="confirmRecoverBtn" onclick="confirmRecovery()">Verificar</button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Nueva Contraseña -->
+<div class="modal-overlay" id="resetPasswordModal" aria-hidden="true">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="resetPasswordModalTitle">
+        <div class="modal-header">
+            <h3 id="resetPasswordModalTitle">Nueva contraseña</h3>
+            <button type="button" class="modal-close" id="closeResetModal" onclick="closeModal('resetPasswordModal')">×</button>
+        </div>
+        <div class="modal-body">
+            <p>Por favor, crea una contraseña fuerte que no hayas usado antes.</p>
+            
+            <div class="form-group" style="margin-bottom:0">
+                <label class="form-label">Nueva contraseña</label>
+                <div class="input-wrap">
+                    <input type="password" id="newPassword" placeholder="Nueva contraseña" autocomplete="new-password">
+                    <i class="input-icon fa-solid fa-lock"></i>
+                    <span class="toggle-pass" onclick="togglePassField('newPassword','newEyeIcon')">
+                        <i class="fa-solid fa-eye" id="newEyeIcon"></i>
+                    </span>
+                </div>
+            </div>
+            
+            <div class="strength-meter">
+                <div class="strength-meter-label">
+                    <span>Nivel de seguridad</span>
+                    <span id="strengthText">Sin contraseña</span>
+                </div>
+                <div class="meter-bar">
+                    <div class="meter-bar-fill" id="strengthFill"></div>
+                </div>
+            </div>
+
+            <div class="form-group" style="margin-bottom:0">
+                <label class="form-label">Confirmar contraseña</label>
+                <div class="input-wrap">
+                    <input type="password" id="confirmPassword" placeholder="Confirmar contraseña" autocomplete="new-password">
+                    <i class="input-icon fa-solid fa-lock"></i>
+                    <span class="toggle-pass" onclick="togglePassField('confirmPassword','confirmEyeIcon')">
+                        <i class="fa-solid fa-eye" id="confirmEyeIcon"></i>
+                    </span>
+                </div>
+            </div>
+            
+            <div class="success-message" id="resetSuccessMessage">¡Contraseña actualizada! Redirigiendo...</div>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="modal-button secondary" id="cancelReset">Cancelar</button>
+            <button type="button" class="modal-button primary" id="updatePasswordBtn">Guardar cambios</button>
+        </div>
+    </div>
+</div>
+
+<script>
+function togglePassField(inputId, iconId) {
+    const input = document.getElementById(inputId);
+    const icon = document.getElementById(iconId);
+    if (!input || !icon) return;
+    if (input.type === 'password') {
+        input.type = 'text';
+        icon.classList.replace('fa-eye', 'fa-eye-slash');
+    } else {
+        input.type = 'password';
+        icon.classList.replace('fa-eye-slash', 'fa-eye');
+    }
+}
+
+function togglePass() {
+    togglePassField('passwordInput', 'eyeIcon');
+}
+
+function openModal(modalId) {
+    const modal = document.getElementById(modalId);
+    if (!modal) return;
+    modal.classList.add('visible');
+    modal.setAttribute('aria-hidden', 'false');
+}
+
+function closeModal(modalId) {
+    const modal = document.getElementById(modalId);
+    if (!modal) return;
+    modal.classList.remove('visible');
+    modal.setAttribute('aria-hidden', 'true');
+}
+
+function updateStrengthIndicator(password) {
+    const strengthText = document.getElementById('strengthText');
+    const strengthFill = document.getElementById('strengthFill');
+    const trimmed = password.trim();
+    let strength = 0;
+    if (trimmed.length >= 8) strength += 1;
+    if (/[A-Z]/.test(trimmed) && /[a-z]/.test(trimmed)) strength += 1;
+    if (/[0-9]/.test(trimmed) || /[^A-Za-z0-9]/.test(trimmed)) strength += 1;
+
+    if (!trimmed) {
+        strengthText.textContent = 'Ingresa una contraseña';
+        strengthFill.style.width = '0%';
+        strengthFill.className = 'meter-bar-fill';
+        return;
+    }
+
+    if (strength <= 1) {
+        strengthText.textContent = 'Contraseña débil';
+        strengthFill.style.width = '33%';
+        strengthFill.className = 'meter-bar-fill meter-weak';
+    } else if (strength === 2) {
+        strengthText.textContent = 'Contraseña media';
+        strengthFill.style.width = '66%';
+        strengthFill.className = 'meter-bar-fill meter-medium';
+    } else {
+        strengthText.textContent = 'Contraseña segura';
+        strengthFill.style.width = '100%';
+        strengthFill.className = 'meter-bar-fill meter-strong';
+    }
+}
+
+function showForgotHintIfError() {
+    const hint = document.getElementById('forgotPasswordHint');
+    const errorAlert = document.querySelector('.alert-item.error');
+    if (hint && errorAlert) {
+        hint.classList.remove('hidden');
+    }
+}
+
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (const cookie of cookies) {
+            const trimmed = cookie.trim();
+            if (trimmed.startsWith(name + '=')) {
+                cookieValue = decodeURIComponent(trimmed.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+function getCsrfToken() {
+    return document.querySelector('input[name="csrfmiddlewaretoken"]')?.value || getCookie('csrftoken');
+}
+
+function postJson(url, data) {
+    return fetch(url, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'X-CSRFToken': getCsrfToken(),
+        },
+        body: new URLSearchParams(data),
+    });
+}
+
+window.addEventListener('DOMContentLoaded', function() {
+    const recoverBtn = document.getElementById('recoverPasswordBtn');
+    const recoverLink = document.getElementById('recoverPasswordLink');
+    const cancelRecover = document.getElementById('cancelRecover');
+    const closeRecover = document.getElementById('closeRecoverModal');
+    const recoverModal = document.getElementById('recoverModal');
+    const recoverEmail = document.getElementById('recoverEmail');
+    const recoverCode = document.getElementById('recoverCode');
+
+    const resetModal = document.getElementById('resetPasswordModal');
+    const closeReset = document.getElementById('closeResetModal');
+    const cancelReset = document.getElementById('cancelReset');
+    const newPassword = document.getElementById('newPassword');
+    const confirmPassword = document.getElementById('confirmPassword');
+    const updatePasswordBtn = document.getElementById('updatePasswordBtn');
+    const resetSuccessMessage = document.getElementById('resetSuccessMessage');
+
+    if (recoverBtn) {
+        recoverBtn.addEventListener('click', function() { openModal('recoverModal'); });
+    }
+    if (recoverLink) {
+        recoverLink.addEventListener('click', function() { openModal('recoverModal'); });
+    }
+    if (closeReset) {
+        closeReset.addEventListener('click', function() { closeModal('resetPasswordModal'); });
+    }
+    if (cancelReset) {
+        cancelReset.addEventListener('click', function() { closeModal('resetPasswordModal'); });
+    }
+
+    if (newPassword) {
+        newPassword.addEventListener('input', function() {
+            updateStrengthIndicator(newPassword.value);
+        });
+    }
+    if (confirmPassword) {
+        confirmPassword.addEventListener('input', function() {
+            updateStrengthIndicator(newPassword.value);
+        });
+    }
+
+    if (updatePasswordBtn) {
+        updatePasswordBtn.addEventListener('click', function() {
+            resetPassword();
+        });
+    }
+
+    showForgotHintIfError();
+});
+
+function recoverSendCode() {
+    const recoverEmail = document.getElementById('recoverEmail');
+    const verificationCodeGroup = document.getElementById('verificationCodeGroup');
+    const confirmRecoverBtn = document.getElementById('confirmRecoverBtn');
+    const recoverStatus = document.getElementById('recoverStatus');
+    const emailValue = recoverEmail ? recoverEmail.value.trim() : '';
+
+    if (!recoverStatus || !recoverEmail) {
+        return;
+    }
+
+    if (!emailValue) {
+        recoverStatus.textContent = 'Por favor ingresa tu correo.';
+        recoverStatus.className = 'status-message error';
+        return;
+    }
+
+    postJson('/login/enviar-codigo/', { email: emailValue })
+        .then(response => response.json())
+        .then(data => {
+            if (!data.ok) {
+                recoverStatus.textContent = data.error || 'No se pudo enviar el código.';
+                recoverStatus.className = 'status-message error';
+                return;
+            }
+            verificationCodeGroup.classList.remove('hidden');
+            if (confirmRecoverBtn) confirmRecoverBtn.classList.remove('hidden');
+            recoverStatus.textContent = 'Código enviado. Revisa tu correo e ingresa el código.';
+            recoverStatus.className = 'status-message success';
+            const recoverCode = document.getElementById('recoverCode');
+            if (recoverCode) {
+                recoverCode.value = '';
+                recoverCode.focus();
+            }
+        })
+        .catch(() => {
+            recoverStatus.textContent = 'Error de conexión. Intenta de nuevo.';
+            recoverStatus.className = 'status-message error';
+        });
+}
+
+function confirmRecovery() {
+    const recoverEmail = document.getElementById('recoverEmail');
+    const recoverCode = document.getElementById('recoverCode');
+    const recoverStatus = document.getElementById('recoverStatus');
+    const emailValue = recoverEmail ? recoverEmail.value.trim() : '';
+    const codeValue = recoverCode ? recoverCode.value.trim() : '';
+
+    if (!recoverStatus || !recoverEmail || !recoverCode) {
+        return;
+    }
+
+    if (!emailValue) {
+        recoverStatus.textContent = 'Por favor ingresa tu correo.';
+        recoverStatus.className = 'status-message error';
+        return;
+    }
+
+    if (!codeValue) {
+        recoverStatus.textContent = 'Por favor ingresa el código de verificación.';
+        recoverStatus.className = 'status-message error';
+        return;
+    }
+
+    postJson('/login/confirmar-codigo/', { email: emailValue, code: codeValue })
+        .then(response => response.json())
+        .then(data => {
+            if (!data.ok) {
+                recoverStatus.textContent = data.error || 'Código incorrecto.';
+                recoverStatus.className = 'status-message error';
+                return;
+            }
+            recoverStatus.textContent = 'Código correcto. Abriendo segunda ventana...';
+            recoverStatus.className = 'status-message success';
+            setTimeout(function() {
+                closeModal('recoverModal');
+                openModal('resetPasswordModal');
+            }, 400);
+        })
+        .catch(() => {
+            recoverStatus.textContent = 'Error de conexión. Intenta de nuevo.';
+            recoverStatus.className = 'status-message error';
+        });
+}
+
+function resetPassword() {
+    const newPassword = document.getElementById('newPassword');
+    const confirmPassword = document.getElementById('confirmPassword');
+    const resetSuccessMessage = document.getElementById('resetSuccessMessage');
+    const passValue = newPassword ? newPassword.value.trim() : '';
+    const confirmValue = confirmPassword ? confirmPassword.value.trim() : '';
+
+    if (!passValue || !confirmValue) {
+        alert('Completa ambos campos de contraseña.');
+        return;
+    }
+    if (passValue !== confirmValue) {
+        alert('Las contraseñas no coinciden.');
+        return;
+    }
+    if (passValue.length < 8) {
+        alert('La contraseña debe tener al menos 8 caracteres.');
+        return;
+    }
+
+    postJson('/login/resetear-contrasena/', { password: passValue, confirm_password: confirmValue })
+        .then(response => response.json())
+        .then(data => {
+            if (!data.ok) {
+                alert(data.error || 'No se pudo actualizar la contraseña.');
+                return;
+            }
+            if (resetSuccessMessage) {
+                resetSuccessMessage.style.display = 'block';
+            }
+            setTimeout(function() {
+                window.location.href = window.location.href;
+            }, 1500);
+        })
+        .catch(() => {
+            alert('Error de conexión. Intenta de nuevo.');
+        });
+}
+
+</script>
+</body>
+</html>

@@ -1,0 +1,17 @@
+{% load static %}
+<nav class="navbar navbar-dark bg-dark px-3">
+    <button id="toggle-btn" class="btn btn-outline-light">
+        <i class="fa-solid fa-bars"></i>
+    </button>
+
+    <span class="navbar-brand ms-3">Proyecto Inventario - Grupo 3</span>
+</nav>
+
+<!-- ================= CONTENIDO ================= -->
+<main id="content" class="container-fluid mt-4">
+
+    {% block content %}
+    <!-- Aquí va el contenido de cada página -->
+    {% endblock %}
+
+</main>

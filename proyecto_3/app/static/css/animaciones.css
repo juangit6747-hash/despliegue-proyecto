@@ -1,0 +1,122 @@
+/*
+ * animaciones.css — Sistema global de animaciones
+ * Requiere: tokens.css
+ */
+
+/* ── Fade up ── */
+.animate-fade-up {
+  opacity: 0;
+  transform: translateY(22px);
+  transition: opacity 0.5s cubic-bezier(0.25,1,0.5,1), transform 0.5s cubic-bezier(0.25,1,0.5,1);
+  will-change: opacity, transform;
+}
+
+/* ── Fade in ── */
+.animate-fade-in {
+  opacity: 0;
+  transition: opacity 0.5s cubic-bezier(0.25,1,0.5,1);
+  will-change: opacity;
+}
+
+/* ── Slide left ── */
+.animate-slide-left {
+  opacity: 0;
+  transform: translateX(22px);
+  transition: opacity 0.5s cubic-bezier(0.25,1,0.5,1), transform 0.5s cubic-bezier(0.25,1,0.5,1);
+  will-change: opacity, transform;
+}
+
+/* ── Slide right ── */
+.animate-slide-right {
+  opacity: 0;
+  transform: translateX(-22px);
+  transition: opacity 0.5s cubic-bezier(0.25,1,0.5,1), transform 0.5s cubic-bezier(0.25,1,0.5,1);
+  will-change: opacity, transform;
+}
+
+/* ── Estado activo ── */
+.animate-active {
+  opacity: 1 !important;
+  transform: none !important;
+  will-change: auto !important;
+}
+
+/* ── Stagger ── */
+.animate-stagger .animate-item {
+  opacity: 0;
+  transform: translateY(16px);
+  transition: opacity 0.45s cubic-bezier(0.25,1,0.5,1), transform 0.45s cubic-bezier(0.25,1,0.5,1);
+  will-change: opacity, transform;
+}
+
+.animate-stagger.animate-active .animate-item {
+  opacity: 1;
+  transform: none;
+  will-change: auto;
+}
+
+/* ── Botones shine ── */
+.btn {
+  position: relative;
+  overflow: hidden;
+  transition: transform var(--tr-base), box-shadow var(--tr-base), background var(--tr-base), border-color var(--tr-base);
+}
+
+.btn:active { transform: scale(0.96) !important; }
+
+.btn::after {
+  content: '';
+  position: absolute;
+  top: 0; left: -100%;
+  width: 50%; height: 100%;
+  background: linear-gradient(to right, transparent 0%, rgba(255,255,255,0.14) 50%, transparent 100%);
+  transform: skewX(-22deg);
+  transition: none;
+  pointer-events: none;
+}
+
+.btn:hover::after { animation: btn-shine 0.60s ease-out forwards; }
+
+@keyframes btn-shine {
+  100% { left: 200%; }
+}
+
+/* ── Inputs ── */
+.form-control, .form-select {
+  transition: all var(--tr-base) !important;
+}
+
+/* ── Spinner ── */
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.spinner {
+  display: inline-block;
+  width: 18px; height: 18px;
+  border: 2px solid rgba(255,255,255,0.15);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+
+/* ── Pulse suave ── */
+@keyframes pulse-soft {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.6; }
+}
+
+.pulse { animation: pulse-soft 2s ease-in-out infinite; }
+
+/* ── Skeleton loader ── */
+.skeleton {
+  background: linear-gradient(90deg, rgba(255,255,255,0.04) 25%, rgba(255,255,255,0.08) 50%, rgba(255,255,255,0.04) 75%);
+  background-size: 200% 100%;
+  animation: skeleton-wave 1.5s ease-in-out infinite;
+  border-radius: var(--r-xs);
+}
+
+@keyframes skeleton-wave {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}

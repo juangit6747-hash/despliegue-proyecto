@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ titulo }}</title>
+    <style>
+        @page {
+            size: letter;
+            margin: 15mm;
+            @bottom-right {
+                content: "Página " counter(page) " de " counter(pages);
+                font-family: 'Arial', sans-serif;
+                font-size: 8pt;
+                color: #7f8c8d;
+            }
+        }
+        body {
+            font-family: 'Arial', sans-serif;
+            color: #2c3e50;
+            margin: 0;
+            padding: 0;
+            font-size: 10pt;
+        }
+        .header {
+            border-bottom: 2px solid #1e3a5f;
+            padding-bottom: 8px;
+            margin-bottom: 20px;
+        }
+        .titulo {
+            font-size: 18pt;
+            font-weight: bold;
+            color: #1e3a5f;
+            margin: 0;
+            text-transform: uppercase;
+        }
+        .fecha {
+            font-size: 9pt;
+            color: #555555;
+            margin-top: 5px;
+            font-style: italic;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+            page-break-inside: auto;
+        }
+        tr {
+            page-break-inside: avoid;
+            page-break-after: auto;
+        }
+        th {
+            background-color: #4472c4;
+            color: #ffffff;
+            font-weight: bold;
+            text-align: left;
+            padding: 8px;
+            font-size: 10pt;
+            border: 1px solid #bdc3c7;
+        }
+        td {
+            padding: 7px;
+            border: 1px solid #bdc3c7;
+            vertical-align: middle;
+        }
+        tr:nth-child(even) td {
+            background-color: #dce6f1; /* Gris/Azul claro intercalado como tu Excel */
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <div class="titulo">{{ titulo }}</div>
+        <div class="fecha">Generado el: {{ fecha_generacion }}</div>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                {% for columna in columnas %}
+                    <th>{{ columna }}</th>
+                {% endfor %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for fila in datos %}
+                <tr>
+                    {# Al usar .values, el template itera dinámicamente los valores del diccionario en orden #}
+                    {% for valor in fila.values %}
+                        <td>{{ valor }}</td>
+                    {% endfor %}
+                </tr>
+                <a href="{% url 'descargar_general_pdf' %}" class="btn-pdf-general">
+    <i class="fas fa-file-pdf"></i> Descargar Reporte General (PDF)
+</a>
+            {% endfor %}
+        </tbody>
+    </table>
+
+</body>
+</html>

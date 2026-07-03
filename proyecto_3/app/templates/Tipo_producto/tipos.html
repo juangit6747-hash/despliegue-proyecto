@@ -1,0 +1,91 @@
+{% extends 'base.html' %}
+{% block page_header_title %}<i class="fa-solid fa-layer-group me-2"></i>Tipos de Producto{% endblock %}
+
+{% load static %}
+
+{% block title %}Tipos de Producto{% endblock %}
+
+{% block content %}
+
+<div class="page-header animate-slide-right">
+  <div class="page-header-left">
+    <div class="page-title">
+      <div class="page-title-icon"><i class="fa-solid fa-layer-group"></i></div>
+      Tipos de Producto
+    </div>
+    <div class="page-subtitle">Categorías del catálogo de productos</div>
+  </div>
+</div>
+
+<div class="split-layout animate-fade-up">
+
+  <!-- Panel formulario -->
+  <div class="form-panel">
+    <div class="form-panel-header">
+      <i class="fa-solid fa-plus-circle"></i> Nuevo Tipo
+    </div>
+    <div class="form-panel-body">
+      <form method="POST" action="{% url 'crear_tipo' %}">
+        {% csrf_token %}
+        <div class="mb-3">
+          <label class="form-label">Nombre del Tipo <span style="color:var(--c-danger);">*</span></label>
+          <div class="input-icon-wrap">
+            <i class="fa-solid fa-layer-group input-icon"></i>
+            <input type="text" name="nombre_tipo" class="form-control" required
+                   minlength="2" maxlength="100"
+                   oninput="bloquearNombreTipo(this)"
+                   placeholder="Ej: Lácteos, Granos, Bebidas...">
+          </div>
+          <div id="tipo_error" class="form-text" style="color:var(--c-danger);display:none;"></div>
+        </div>
+        <button type="submit" class="btn btn-primary w-100">
+          <i class="fa-solid fa-floppy-disk"></i> Guardar Tipo
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Panel lista -->
+  <div class="items-panel">
+    <div class="items-panel-header">
+      <div class="items-panel-title">
+        <i class="fa-solid fa-list"></i> Tipos Registrados
+      </div>
+      <span class="items-count">{{ tipos|length }}</span>
+    </div>
+
+    {% for tipo in tipos %}
+    <div class="item-row animate-item">
+      <div class="item-info">
+        <div class="item-bullet"></div>
+        <div>
+          <div class="item-name">{{ tipo.nombre_tipo }}</div>
+          <div class="item-meta">ID #{{ tipo.idTipo }}</div>
+        </div>
+      </div>
+      <div class="item-actions">
+        <form method="POST" action="{% url 'eliminar_tipo' tipo.idTipo %}">
+          {% csrf_token %}
+          <button type="button" class="btn btn-sm btn-danger btn-icon-sq"
+                  onclick="confirmarEliminar('{{ tipo.nombre_tipo }}', this.closest('form'))"
+                  title="Eliminar tipo">
+            <i class="fa-solid fa-trash"></i>
+          </button>
+        </form>
+      </div>
+    </div>
+    {% empty %}
+    <div class="items-empty">
+      <i class="fa-solid fa-layer-group"></i>
+      <p>No hay tipos registrados.<br>Agrega el primero usando el formulario.</p>
+    </div>
+    {% endfor %}
+  </div>
+
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/tipos.js' %}"></script>
+{% endblock %}

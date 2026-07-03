@@ -1,0 +1,229 @@
+{% extends 'base.html' %}
+{% block page_header_title %}<i class="fa-solid fa-database me-2"></i>Respaldo BD{% endblock %}
+
+{% load static %}
+
+{% block content %}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="fa-solid fa-database me-2"></i>Respaldo y Restauracion de BD</h2>
+</div>
+
+<!-- ESTADO DE CONEXION -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="alert {% if mysql_conectado %}alert-success{% else %}alert-danger{% endif %} d-flex align-items-center mb-0" role="alert">
+            <i class="fa-solid {% if mysql_conectado %}fa-circle-check{% else %}fa-circle-xmark{% endif %} me-2 fs-5"></i>
+            <div>
+                <strong>Estado de Conexion MySQL:</strong>
+                {% if mysql_conectado %}
+                    Conectado correctamente
+                {% else %}
+                    No se puede conectar a MySQL — Verifica que el servidor este ejecutandose y que el usuario y contraseña en <code>settings.py</code> sean correctos.
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- TARJETAS PRINCIPALES -->
+<div class="row mb-4">
+
+    <!-- DESCARGAR RESPALDO -->
+    <div class="col-md-6 mb-4">
+        <div class="card shadow h-100 {% if not mysql_conectado %}opacity-50{% endif %}">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><i class="fa-solid fa-download me-2"></i>Descargar Respaldo</h5>
+            </div>
+            <div class="card-body text-center d-flex flex-column justify-content-between">
+                <div>
+                    <i class="fa-solid fa-file-arrow-down text-primary mb-3" style="font-size: 3rem;"></i>
+                    <p class="text-muted mb-1">Descarga un respaldo completo de la base de datos.</p>
+                    <p class="small text-muted mb-4">Incluye todas las tablas y datos actuales.</p>
+                </div>
+                {% if mysql_conectado %}
+                    <form method="post" action="{% url 'backup' %}">
+                        {% csrf_token %}
+                        <input type="hidden" name="accion" value="backup_completo">
+                        <button type="submit" class="btn btn-primary btn-lg w-100">
+                            <i class="fa-solid fa-download me-2"></i> Descargar SQL
+                        </button>
+                    </form>
+                {% else %}
+                    <button type="button" class="btn btn-secondary btn-lg w-100" disabled>
+                        <i class="fa-solid fa-circle-xmark me-2"></i> MySQL No Conectado
+                    </button>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- RESTAURAR DATOS -->
+    <div class="col-md-6 mb-4">
+        <div class="card shadow h-100 {% if not mysql_conectado %}opacity-50{% endif %}">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0"><i class="fa-solid fa-upload me-2"></i>Restaurar Base de Datos</h5>
+            </div>
+            <div class="card-body text-center d-flex flex-column justify-content-between">
+                <div>
+                    <i class="fa-solid fa-cloud-arrow-up text-success mb-3" style="font-size: 3rem;"></i>
+                    <p class="text-muted mb-1">Restaura la BD desde un archivo SQL.</p>
+                    <p class="small text-danger mb-4"><i class="fa-solid fa-triangle-exclamation me-1"></i><strong>Cuidado:</strong> Esto sobrescribe todos los datos actuales.</p>
+                </div>
+                {% if mysql_conectado %}
+                    <div id="zona-carga" class="p-4 text-center rounded"
+                        style="cursor: pointer; background-color: #f8f9fa; border: 2px dashed #28a745;">
+                        <input type="file" id="archivo-respaldo" accept=".sql" style="display: none;">
+                        <i class="fa-solid fa-file-arrow-up text-success" style="font-size: 2rem;"></i>
+                        <p class="mb-0 mt-2 fw-bold">Arrastra un archivo .sql aqui</p>
+                        <p class="small text-muted mt-1">o haz clic para seleccionar</p>
+                    </div>
+                {% else %}
+                    <div class="p-4 text-center rounded bg-light" style="border: 2px dashed #ccc;">
+                        <i class="fa-solid fa-circle-xmark text-secondary" style="font-size: 2rem;"></i>
+                        <p class="mb-0 mt-2 fw-bold text-muted">MySQL No Conectado</p>
+                        <p class="small text-muted mt-1">Conecta MySQL para restaurar</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<!-- INFORMACION -->
+<div class="row">
+    <div class="col-12">
+        <div class="card border-info shadow">
+            <div class="card-header bg-info text-white">
+                <h6 class="mb-0"><i class="fa-solid fa-circle-info me-2"></i>Informacion</h6>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6><i class="fa-solid fa-list-check me-1"></i> Requisitos:</h6>
+                        <ul class="small mb-0">
+                            <li>MySQL Server 8.0 instalado en <code>C:\Program Files\MySQL\MySQL Server 8.0\bin</code></li>
+                            <li>Base de datos <strong>proyecto</strong> creada</li>
+                            <li>Usuario <strong>root</strong> con permisos completos (SELECT, INSERT, UPDATE, DELETE, CREATE, DROP)</li>
+                            <li>Usuario y contraseña configurados en <code>settings.py</code></li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <h6><i class="fa-solid fa-file-code me-1"></i> Archivos generados:</h6>
+                        <ul class="small mb-0">
+                            <li><code>backup_completo_YYYYMMDD_HHMMSS.sql</code></li>
+                            <li>Contiene toda la estructura y datos</li>
+                            <li>Editable con cualquier editor de texto</li>
+                            <li>Reutilizable para restaurar en otro servidor</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- SCRIPT PARA RESTAURACION -->
+{% if mysql_conectado %}
+<script>
+    const zonaC = document.getElementById('zona-carga');
+    const archivoInput = document.getElementById('archivo-respaldo');
+
+    if (zonaC) {
+        zonaC.addEventListener('click', () => archivoInput.click());
+
+        zonaC.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            zonaC.style.backgroundColor = '#d4edda';
+            zonaC.style.borderColor = '#198754';
+        });
+
+        zonaC.addEventListener('dragleave', () => {
+            zonaC.style.backgroundColor = '#f8f9fa';
+            zonaC.style.borderColor = '#28a745';
+        });
+
+        zonaC.addEventListener('drop', (e) => {
+            e.preventDefault();
+            zonaC.style.backgroundColor = '#f8f9fa';
+            zonaC.style.borderColor = '#28a745';
+            const archivos = e.dataTransfer.files;
+            if (archivos.length > 0) subirArchivo(archivos[0]);
+        });
+
+        archivoInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) subirArchivo(e.target.files[0]);
+        });
+    }
+
+    function subirArchivo(archivo) {
+        if (!archivo.name.endsWith('.sql')) {
+            Swal.fire({ icon: 'error', title: '¡Error!', text: 'Por favor, selecciona un archivo SQL valido (.sql)', confirmButtonColor: '#28a745' });
+            return;
+        }
+
+        if (archivo.size > 100 * 1024 * 1024) {
+            Swal.fire({ icon: 'warning', title: '¡Atención!', text: 'El archivo es muy grande (máx 100MB)', confirmButtonColor: '#28a745' });
+            return;
+        }
+
+        Swal.fire({
+            icon: 'warning',
+            title: '¿Estas seguro?',
+            text: 'Esto sobrescribira todos los datos actuales de la base de datos.',
+            showCancelButton: true,
+            confirmButtonText: 'Sí, restaurar',
+            cancelButtonText: 'Cancelar',
+            confirmButtonColor: '#dc3545',
+            cancelButtonColor: '#6c757d',
+        }).then((result) => {
+            if (result.isConfirmed) {
+                ejecutarRestauracion(archivo);
+            }
+        });
+    }
+
+    function ejecutarRestauracion(archivo) {
+        const formData = new FormData();
+        formData.append('archivo', archivo);
+
+        const textoOriginal = zonaC.innerHTML;
+        zonaC.innerHTML = '<div class="text-center"><i class="fa-solid fa-spinner fa-spin text-primary" style="font-size: 2rem;"></i><p class="mt-2 fw-bold">Restaurando...</p></div>';
+        zonaC.style.opacity = '0.7';
+
+        fetch('{% url "restaurar_datos" %}', {
+            method: 'POST',
+            body: formData,
+            headers: { 'X-CSRFToken': '{{ csrf_token }}' }
+        })
+        .then(response => response.json())
+        .then(data => {
+            zonaC.innerHTML = textoOriginal;
+            zonaC.style.opacity = '1';
+            if (data.exito) {
+                Swal.fire({ icon: 'success', title: '¡Listo!', text: data.mensaje, confirmButtonColor: '#28a745' })
+                    .then(() => location.reload());
+            } else {
+                Swal.fire({ icon: 'error', title: '¡Error!', text: data.error, confirmButtonColor: '#28a745' });
+            }
+        })
+        .catch(error => {
+            zonaC.innerHTML = textoOriginal;
+            zonaC.style.opacity = '1';
+            Swal.fire({ icon: 'error', title: '¡Error de conexión!', text: error.toString(), confirmButtonColor: '#28a745' });
+        });
+    }
+</script>
+{% endif %}
+
+<style>
+    .card { transition: transform 0.2s; }
+    .card:hover { transform: translateY(-2px); }
+    #zona-carga:hover {
+        background-color: #d4edda !important;
+        border-color: #198754 !important;
+    }
+</style>
+
+{% endblock %}

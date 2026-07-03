@@ -1,0 +1,141 @@
+<div class="modal fade" id="modalEditarCompra{{ compra.idCompra }}" tabindex="-1" aria-modal="true" role="dialog">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title"><i class="fa-solid fa-pen"></i> Editar Compra #{{ compra.idCompra }}</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <form method="POST" action="{% url 'modal_editar_compra' compra.idCompra %}">
+        {% csrf_token %}
+        <div class="modal-body">
+          <div class="mb-3">
+            <label class="form-label">Fecha <span style="color:var(--c-danger);">*</span></label>
+            <input type="date" name="fecha" class="form-control"
+                   value="{{ compra.fechaCompra|date:'Y-m-d' }}"
+                   min="{{ fecha_min }}" max="{{ fecha_max }}" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Estado <span style="color:var(--c-danger);">*</span></label>
+            <select name="estado" class="form-select" required>
+              <option value="Completada" {% if compra.estado == 'Completada' %}selected{% endif %}>Completada</option>
+              <option value="Pendiente"  {% if compra.estado == 'Pendiente'  %}selected{% endif %}>Pendiente</option>
+            </select>
+          </div>
+
+          <!-- Proveedor primero -->
+          <div class="mb-3">
+            <label class="form-label">Proveedor <span style="color:var(--c-danger);">*</span></label>
+            <select name="proveedor" id="editar_proveedor_{{ compra.idCompra }}" class="form-select" required>
+              {% for proveedor in proveedores %}
+                <option value="{{ proveedor.id }}"
+                        data-envio="{{ proveedor.envio }}"
+                        data-velocidad="{% if proveedor.envio <= 7 %}rapido{% elif proveedor.envio <= 15 %}normal{% else %}lento{% endif %}"
+                        {% if compra.Proveedor.id == proveedor.id %}selected{% endif %}>
+                  {{ proveedor.nombre }}
+                </option>
+              {% endfor %}
+            </select>
+            <div id="editar_badge_{{ compra.idCompra }}" style="margin-top:6px;">
+              <span id="editar_badge_text_{{ compra.idCompra }}" class="badge
+                {% if compra.Proveedor.envio <= 7 %}badge-success{% elif compra.Proveedor.envio <= 15 %}badge-warning{% else %}badge-danger{% endif %}">
+                {% if compra.Proveedor.envio <= 7 %}🟢 Envío rápido{% elif compra.Proveedor.envio <= 15 %}🟡 Envío normal{% else %}🔴 Envío lento{% endif %}
+                — {{ compra.Proveedor.envio }} días
+              </span>
+            </div>
+          </div>
+
+          <!-- Producto: cargado con los del proveedor, con el actual preseleccionado -->
+          <div class="mb-3">
+            <label class="form-label">Producto <span style="color:var(--c-danger);">*</span></label>
+            <select name="producto" id="editar_producto_{{ compra.idCompra }}" class="form-select" required>
+              <!-- Siempre incluimos el producto actual por si el proveedor no tiene historial -->
+              <option value="{{ compra.Producto.idProducto }}" selected>{{ compra.Producto.nombre }} (actual)</option>
+              {% for producto in productos %}
+                {% if producto.idProducto != compra.Producto.idProducto %}
+                  <option value="{{ producto.idProducto }}">{{ producto.nombre }} (stock: {{ producto.stock }})</option>
+                {% endif %}
+              {% endfor %}
+            </select>
+            <div id="editar_prod_loading_{{ compra.idCompra }}" style="display:none;font-size:.8rem;color:var(--tx-muted);margin-top:4px;">
+              <i class="fa-solid fa-spinner fa-spin"></i> Cargando productos...
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="submit" class="btn btn-warning">
+            <i class="fa-solid fa-floppy-disk"></i> Actualizar Compra
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  var selProv   = document.getElementById('editar_proveedor_{{ compra.idCompra }}');
+  var selProd   = document.getElementById('editar_producto_{{ compra.idCompra }}');
+  var loading   = document.getElementById('editar_prod_loading_{{ compra.idCompra }}');
+  var badgeText = document.getElementById('editar_badge_text_{{ compra.idCompra }}');
+  var prodActualId   = '{{ compra.Producto.idProducto }}';
+  var prodActualNom  = '{{ compra.Producto.nombre|escapejs }}';
+
+  var BADGE_CLASSES = { rapido: 'badge-success', normal: 'badge-warning', lento: 'badge-danger' };
+  var BADGE_LABELS  = { rapido: '🟢 Envío rápido', normal: '🟡 Envío normal', lento: '🔴 Envío lento' };
+
+  if (!selProv || !selProd) return;
+
+  selProv.addEventListener('change', function () {
+    var provId = this.value;
+    var opt    = this.options[this.selectedIndex];
+
+    // Actualizar badge
+    if (opt && provId) {
+      var vel  = opt.dataset.velocidad;
+      var dias = opt.dataset.envio;
+      badgeText.className = 'badge ' + (BADGE_CLASSES[vel] || '');
+      badgeText.textContent = (BADGE_LABELS[vel] || '') + ' — ' + dias + ' días';
+    }
+
+    if (!provId) return;
+    loading.style.display = 'block';
+
+    fetch('/proveedores/' + provId + '/productos/')
+      .then(function (r) { return r.json(); })
+      .then(function (data) {
+        loading.style.display = 'none';
+        selProd.innerHTML = '';
+
+        var lista = data.productos || [];
+        // Si el producto actual no está en la lista, agregarlo primero
+        var tieneActual = lista.some(function (p) { return String(p.id) === prodActualId; });
+        if (!tieneActual) {
+          var oAct = document.createElement('option');
+          oAct.value = prodActualId;
+          oAct.textContent = prodActualNom + ' (actual)';
+          oAct.selected = true;
+          selProd.appendChild(oAct);
+        }
+
+        lista.forEach(function (p) {
+          var o = document.createElement('option');
+          o.value = p.id;
+          o.textContent = p.nombre + ' (stock: ' + p.stock + ')';
+          if (String(p.id) === prodActualId) o.selected = true;
+          selProd.appendChild(o);
+        });
+
+        if (lista.length === 0 && tieneActual === false) {
+          var oEmpty = document.createElement('option');
+          oEmpty.value = '';
+          oEmpty.textContent = 'Sin productos adicionales';
+          selProd.insertBefore(oEmpty, selProd.firstChild);
+        }
+      })
+      .catch(function () {
+        loading.style.display = 'none';
+      });
+  });
+})();
+</script>

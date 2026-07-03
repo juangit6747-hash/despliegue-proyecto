@@ -1,0 +1,59 @@
+# ===========================
+# Python
+# ===========================
+*.pyc
+*.pyo
+*.pyd
+*.py[cod]
+*$py.class
+__pycache__/
+**/migrations/__pycache__/
+
+# ===========================
+# Django
+# ===========================
+*.log
+db.sqlite3
+*.sqlite3
+*.db
+/media/
+/staticfiles/
+/static_root/
+
+# Archivo de settings local (cada quien tiene su propia contraseña de BD)
+proyecto_3/config/settings_local.py
+
+# Variables de entorno
+.env
+
+# ===========================
+# Entornos virtuales
+# ===========================
+.venv/
+venv/
+env/
+ENV/
+
+# ===========================
+# IDEs
+# ===========================
+.vscode/
+.idea/
+*.swp
+*.swo
+*.suo
+notepad*/
+
+# ===========================
+# Sistema operativo
+# ===========================
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ===========================
+# Archivos temporales
+# ===========================
+*.bak
+*.tmp
+limpiar_base.py

@@ -1,0 +1,64 @@
+<!-- Modal Escáner Mejorado -->
+<div class="modal fade" id="modalEscaner" tabindex="-1" aria-modal="true" role="dialog">
+  <div class="modal-dialog modal-dialog-centered modal-xl">
+    <div class="modal-content">
+      <div class="modal-header" style="background:linear-gradient(135deg,rgba(41,128,185,0.20),rgba(41,128,185,0.08));">
+        <h5 class="modal-title">
+          <i class="fa-solid fa-barcode" style="color:var(--c-info);"></i>
+          Escanear Código de Barras
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body" style="padding:20px;">
+        <div class="row g-3">
+          <div class="col-12 col-md-7">
+            <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;">
+              <button class="btn btn-info" id="escaner-btn-camara" style="flex:1;">
+                <i class="fa-solid fa-camera"></i> Camara
+              </button>
+              <button class="btn btn-secondary" id="escaner-btn-imagen" style="flex:1;">
+                <i class="fa-solid fa-image"></i> Imagen
+              </button>
+              <button class="btn btn-secondary" id="escaner-btn-modo-inventario" style="flex:1;">
+                <i class="fa-solid fa-boxes-stacked"></i> Modo inventario
+              </button>
+            </div>
+            <input type="file" id="escaner-input-imagen" accept="image/*" style="display:none;">
+            <div id="escaner-area-lector"
+                 style="width:100%;min-height:220px;background:var(--bg-input);border-radius:var(--r-md);border:2px dashed var(--bd-default);overflow:hidden;display:flex;align-items:center;justify-content:center;">
+              <div style="text-align:center;color:var(--tx-muted);padding:32px;">
+                <i class="fa-solid fa-barcode" style="font-size:3rem;display:block;margin-bottom:12px;opacity:.3;"></i>
+                <p style="font-size:.875rem;">Selecciona un modo para escanear</p>
+              </div>
+            </div>
+            <p id="escaner-status" style="text-align:center;font-size:.84rem;margin-top:8px;min-height:18px;"></p>
+            <p id="escaner-contador-sesion" style="text-align:center;font-size:.75rem;color:var(--tx-muted);min-height:16px;"></p>
+            <div id="escaner-resultado"></div>
+            <div style="margin-top:12px;padding:9px 13px;background:var(--bg-glass);border-radius:var(--r-sm);font-size:.76rem;color:var(--tx-muted);border:1px solid var(--bd-subtle);">
+              <i class="fa-solid fa-circle-info me-1" style="color:var(--c-info);"></i>
+              Si el producto no esta registrado se consultara <strong>Open Food Facts</strong> para obtener nombre y marca.
+            </div>
+          </div>
+          <div class="col-12 col-md-5">
+            <div style="background:var(--bg-card);border:1px solid var(--bd-default);border-radius:var(--r-md);overflow:hidden;height:100%;">
+              <div style="padding:11px 16px;border-bottom:1px solid var(--bd-default);background:rgba(255,255,255,0.02);">
+                <div style="font-family:var(--font-display);font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--tx-secondary);">
+                  <i class="fa-solid fa-clock-rotate-left me-1"></i> Historial de sesion
+                </div>
+              </div>
+              <div id="escaner-historial" style="padding:10px 14px;max-height:380px;overflow-y:auto;">
+                <div style="text-align:center;padding:24px;color:var(--tx-muted);font-size:.82rem;">
+                  <i class="fa-solid fa-clock-rotate-left" style="font-size:1.5rem;display:block;margin-bottom:8px;opacity:.25;"></i>
+                  Aun no hay escaneos en esta sesion
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,550 @@
+{% extends 'base.html' %}
+{% block page_header_title %}<i class="fa-solid fa-truck me-2"></i>Proveedores{% endblock %}
+
+{% load static %}
+
+{% block title %}Proveedores{% endblock %}
+
+<!-- Modal eliminar proveedor (único, dinámico) -->
+<div class="modal fade" id="modalEliminarProv" tabindex="-1" aria-modal="true" role="dialog">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title"><i class="fa-solid fa-triangle-exclamation" style="color:var(--c-danger);"></i> Eliminar Proveedor</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <form method="post" id="formEliminarProv" action="">
+        {% csrf_token %}
+        <div class="modal-body">
+          <p style="color:var(--tx-primary);">¿Eliminar al proveedor <strong style="color:var(--c-gold);" id="nombreProvEliminar"></strong>?</p>
+          <p style="font-size:.84rem;color:var(--c-danger);">Esta acción no se puede deshacer.</p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="submit" class="btn btn-danger"><i class="fa-solid fa-trash"></i> Sí, eliminar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+document.addEventListener('click', function(e) {
+  var btn = e.target.closest('.btn-eliminar-prov');
+  if (!btn) return;
+  var id     = btn.dataset.id;
+  var nombre = btn.dataset.nombre;
+  document.getElementById('nombreProvEliminar').textContent = nombre;
+  document.getElementById('formEliminarProv').action = '/proveedores/eliminar/' + id + '/';
+  bootstrap.Modal.getOrCreateInstance(document.getElementById('modalEliminarProv')).show();
+});
+</script>
+
+{% block content %}
+<style>
+.pp-card { user-select: none; }
+.pp-card:hover { border-color: var(--c-info) !important; background: rgba(52,152,219,.06) !important; }
+.chip-producto {
+  display:inline-flex;align-items:center;gap:5px;
+  background:rgba(41,128,185,0.12);border:1px solid rgba(41,128,185,0.25);
+  border-radius:20px;padding:3px 10px;font-size:.75rem;color:var(--tx-primary);
+  font-weight:600;margin:2px;
+}
+</style>
+
+<div class="page-header animate-slide-right">
+  <div class="page-header-left">
+    <div class="page-title">
+      <div class="page-title-icon"><i class="fa-solid fa-truck"></i></div>
+      Proveedores
+    </div>
+    <div class="page-subtitle">Gestión de proveedores del sistema</div>
+  </div>
+  <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalCrearProveedor">
+    <i class="fa-solid fa-plus"></i> Nuevo Proveedor
+  </button>
+</div>
+
+<div data-filter-container class="animate-fade-up">
+
+  <!-- Filtros -->
+  <div class="rt-filter-bar" role="search" aria-label="Filtros de proveedores">
+    <div class="rt-filter-grid">
+      <div class="rt-filter-group">
+        <label for="filtro-nombre-prov" class="rt-filter-label"><i class="fa-solid fa-magnifying-glass"></i> Buscar proveedor</label>
+        <div class="rt-input-wrapper">
+          <i class="fa-solid fa-truck rt-input-icon"></i>
+          <input id="filtro-nombre-prov" type="search" class="rt-filter-input" data-filter-col="nombre" placeholder="Buscar por nombre..." autocomplete="off">
+        </div>
+      </div>
+      <div class="rt-filter-group">
+        <label for="filtro-email-prov" class="rt-filter-label"><i class="fa-solid fa-envelope"></i> Email</label>
+        <div class="rt-input-wrapper">
+          <i class="fa-solid fa-envelope rt-input-icon"></i>
+          <input id="filtro-email-prov" type="search" class="rt-filter-input" data-filter-col="email" placeholder="Filtrar por email..." autocomplete="off">
+        </div>
+      </div>
+      <div class="rt-filter-actions">
+        <button type="button" class="rt-btn-clear" data-filter-clear>
+          <i class="fa-solid fa-xmark"></i> Limpiar filtros
+        </button>
+        <span class="rt-filter-count" data-filter-count aria-live="polite"></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Exportar -->
+  <div class="contenedor-exportar">
+    <a href="{% url 'exportar_proveedores_pdf' %}" class="btn btn-danger btn-sm">
+      <i class="fa-solid fa-file-pdf"></i> Exportar PDF
+    </a>
+    <a href="{% url 'exportar_proveedores_excel' %}" class="btn btn-success btn-sm">
+      <i class="fa-solid fa-file-excel"></i> Exportar Excel
+    </a>
+  </div>
+
+  <!-- Tabla -->
+  <div class="glass-card">
+    <div class="glass-card-header">
+      <div class="glass-card-title"><i class="fa-solid fa-list"></i> Proveedores Registrados</div>
+    </div>
+    <div class="tbl-wrap" style="border:none;border-radius:0;">
+      <table class="table" aria-label="Listado de proveedores">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Proveedor</th>
+            <th>Teléfono</th>
+            <th>Email</th>
+            <th>Categoría principal</th>
+            <th>Productos</th>
+            <th>Fecha</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody class="animate-stagger">
+          {% for p in proveedores %}
+          <tr class="animate-item" data-filter-row>
+            <td data-col="id" style="color:var(--tx-muted);font-size:.8rem;">#{{ p.id }}</td>
+            <td data-col="nombre">
+              <div class="tbl-name-cell">
+                <div class="tbl-avatar">{{ p.nombre|slice:":2"|upper }}</div>
+                <span style="font-weight:600;">{{ p.nombre }}</span>
+              </div>
+            </td>
+            <td data-col="telefono" style="font-family:var(--font-mono);font-size:.85rem;">{{ p.telefono }}</td>
+            <td data-col="email" style="font-size:.85rem;color:var(--tx-secondary);">{{ p.email }}</td>
+            <td data-col="categoria" style="font-size:.83rem;color:var(--tx-secondary);">
+              {% if p.categoria_principal != '—' %}
+                <span class="badge badge-info">{{ p.categoria_principal }}</span>
+              {% else %}
+                <span style="color:var(--tx-muted);">Sin asignar</span>
+              {% endif %}
+            </td>
+            <td data-col="productos">
+              <span class="badge badge-info" style="cursor:pointer;"
+                    onclick="gestionarProductos({{ p.id }}, '{{ p.nombre|escapejs }}')">
+                <i class="fa-solid fa-box"></i>
+                {{ p.productos.count }} producto{% if p.productos.count != 1 %}s{% endif %}
+              </span>
+            </td>
+            <td data-col="fecha" style="font-size:.82rem;color:var(--tx-muted);">{{ p.fechaRegistro }}</td>
+            <td>
+              <div class="tbl-actions">
+                <button class="btn btn-sm btn-info btn-icon-sq"
+                  onclick="verProveedor({{ p.id }},'{{ p.nombre|escapejs }}','{{ p.telefono|escapejs }}','{{ p.email|escapejs }}','{{ p.fechaRegistro }}','{{ p.observaciones|escapejs }}')"
+                  title="Ver detalle">
+                  <i class="fa-solid fa-eye"></i>
+                </button>
+                <button class="btn btn-sm btn-warning btn-icon-sq"
+                  onclick="abrirEditar({{ p.id }},'{{ p.nombre|escapejs }}','{{ p.telefono|escapejs }}','{{ p.email|escapejs }}','{{ p.observaciones|escapejs }}')"
+                  title="Editar">
+                  <i class="fa-solid fa-pen"></i>
+                </button>
+
+                <button class="btn btn-sm btn-danger btn-icon-sq btn-eliminar-prov"
+                  data-id="{{ p.id }}" data-nombre="{{ p.nombre|escapejs }}"
+                  title="Eliminar">
+                  <i class="fa-solid fa-trash"></i>
+                </button>
+              </div>
+            </td>
+          </tr>
+          {% empty %}
+          <tr data-filter-row>
+            <td colspan="8" style="text-align:center;padding:48px;color:var(--tx-muted);">
+              <i class="fa-solid fa-truck" style="font-size:2rem;display:block;margin-bottom:10px;opacity:.3;"></i>
+              No hay proveedores registrados
+            </td>
+          </tr>
+          {% endfor %}
+          <tr data-filter-empty style="display:none;">
+            <td colspan="8" style="text-align:center;padding:32px;color:var(--tx-muted);">
+              <i class="fa-solid fa-filter-circle-xmark me-2"></i> Ningún proveedor coincide con los filtros.
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+
+<!-- ── Modal Ver Proveedor ── -->
+<div class="modal fade modal-detalle" id="modalVerProveedor" tabindex="-1" aria-modal="true" role="dialog">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div class="modal-detalle-icon" style="background:rgba(41,128,185,0.12);border-color:var(--c-info);color:var(--c-info);">
+          <i class="fa-solid fa-truck"></i>
+        </div>
+        <h4 class="modal-detalle-title" id="ver_nombre"></h4>
+        <table class="modal-detalle-table mb-3">
+          <tr><td>ID</td><td id="ver_id"></td></tr>
+          <tr><td>Teléfono</td><td id="ver_telefono"></td></tr>
+          <tr><td>Email</td><td id="ver_email"></td></tr>
+          <tr><td>Fecha Registro</td><td id="ver_fecha"></td></tr>
+          <tr><td>Observaciones</td><td id="ver_observaciones" style="white-space:pre-wrap;"></td></tr>
+        </table>
+        <div style="font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--tx-secondary);margin-bottom:8px;">
+          <i class="fa-solid fa-box me-1"></i> Productos asignados
+        </div>
+        <div id="ver_productos_chips" style="min-height:36px;margin-bottom:14px;">
+          <span style="color:var(--tx-muted);font-size:.82rem;">Cargando...</span>
+        </div>
+        <button type="button" class="btn modal-detalle-btn-cerrar" data-bs-dismiss="modal">Cerrar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Modal Crear Proveedor ── -->
+<div class="modal fade" id="modalCrearProveedor" tabindex="-1" aria-modal="true" role="dialog">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title"><i class="fa-solid fa-plus"></i> Nuevo Proveedor</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <form method="post" action="{% url 'crear_proveedor' %}">
+        {% csrf_token %}
+        <div class="modal-body">
+          <div class="mb-3">
+            <label class="form-label">Nombre <span style="color:var(--c-danger);">*</span></label>
+            <input type="text" name="nombre" class="form-control"
+              oninput="this.value = this.value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚüÜñÑ\s]/g, '')"
+              placeholder="Nombre del proveedor" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Teléfono <span style="color:var(--c-danger);">*</span></label>
+            <input type="text" name="telefono" class="form-control" id="crear_telefono"
+              maxlength="10" placeholder="3XXXXXXXXX" required
+              oninput="validarTelefonoProveedor(this)">
+            <div id="crear_tel_error" class="form-text" style="color:var(--c-danger);display:none;"></div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Email <span style="color:var(--c-danger);">*</span></label>
+            <input type="email" name="email" class="form-control"
+              placeholder="proveedor@empresa.com" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Observaciones</label>
+            <textarea name="observaciones" class="form-control" rows="3"
+              placeholder="Ej: Entrega martes y jueves. Pago a 30 días..."></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="submit" class="btn btn-primary"><i class="fa-solid fa-floppy-disk"></i> Guardar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- ── Modal Editar Proveedor ── -->
+<div class="modal fade" id="modalEditarProveedor" tabindex="-1" aria-modal="true" role="dialog">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title"><i class="fa-solid fa-pen"></i> Editar Proveedor</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <form method="post" id="formEditar">
+        {% csrf_token %}
+        <div class="modal-body">
+          <div class="mb-3">
+            <label class="form-label">Nombre <span style="color:var(--c-danger);">*</span></label>
+            <input id="edit_nombre" type="text" name="nombre" class="form-control"
+              oninput="this.value = this.value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚüÜñÑ\s]/g, '')" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Teléfono <span style="color:var(--c-danger);">*</span></label>
+            <input id="edit_telefono" type="text" name="telefono" class="form-control"
+              maxlength="10" required oninput="validarTelefonoProveedor(this)">
+            <div id="edit_tel_error" class="form-text" style="color:var(--c-danger);display:none;"></div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Email <span style="color:var(--c-danger);">*</span></label>
+            <input id="edit_email" type="email" name="email" class="form-control" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Observaciones</label>
+            <textarea id="edit_observaciones" name="observaciones" class="form-control" rows="3"></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="submit" class="btn btn-warning"><i class="fa-solid fa-floppy-disk"></i> Guardar cambios</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- ── Modal Gestión de Productos ── -->
+<div class="modal fade" id="modalProductosProveedor" tabindex="-1" aria-modal="true" role="dialog">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">
+          <i class="fa-solid fa-box"></i>
+          Productos de <span id="pp_nombre_proveedor"></span>
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <p style="font-size:.85rem;color:var(--tx-muted);margin-bottom:14px;">
+          Selecciona los productos que este proveedor suministra.
+        </p>
+        <div style="position:relative;margin-bottom:14px;">
+          <i class="fa-solid fa-magnifying-glass" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--tx-muted);pointer-events:none;"></i>
+          <input type="text" id="pp_busqueda" class="form-control" style="padding-left:36px;" placeholder="Buscar producto...">
+        </div>
+        <div id="pp_grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px;max-height:380px;overflow-y:auto;padding:2px;">
+          <div id="pp_loading" style="grid-column:1/-1;text-align:center;padding:32px;color:var(--tx-muted);">
+            <i class="fa-solid fa-spinner fa-spin me-2"></i>Cargando productos...
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer" style="justify-content:space-between;">
+        <div style="font-size:.83rem;color:var(--tx-muted);">
+          <span id="pp_seleccionados">0</span> seleccionados
+        </div>
+        <div style="display:flex;gap:8px;">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="button" class="btn btn-success" id="pp_btn_guardar">
+            <i class="fa-solid fa-floppy-disk"></i> Guardar
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="{% static 'js/filtros_realtime.js' %}"></script>
+<script>
+function validarTelefonoProveedor(input) {
+  var val = input.value.replace(/[^\d]/g, '');
+  // Solo permitir que inicie con 3
+  if (val.length > 0 && val[0] !== '3') {
+    val = val.substring(1);
+  }
+  input.value = val;
+  var errorId = input.id === 'crear_telefono' ? 'crear_tel_error' : 'edit_tel_error';
+  var el = document.getElementById(errorId);
+  if (el) {
+    if (val.length > 0 && val[0] !== '3') {
+      el.textContent = 'El teléfono debe iniciar con 3.';
+      el.style.display = 'block';
+    } else {
+      el.style.display = 'none';
+    }
+  }
+}
+
+var verProveedorId = null;
+
+function verProveedor(id, nombre, telefono, email, fecha, observaciones) {
+  verProveedorId = id;
+  document.getElementById('ver_id').textContent           = '#' + id;
+  document.getElementById('ver_nombre').textContent       = nombre;
+  document.getElementById('ver_telefono').textContent     = telefono;
+  document.getElementById('ver_email').textContent        = email;
+  document.getElementById('ver_fecha').textContent        = fecha;
+  document.getElementById('ver_observaciones').textContent = observaciones || 'Sin observaciones';
+
+  var chipsEl = document.getElementById('ver_productos_chips');
+  chipsEl.innerHTML = '<span style="color:var(--tx-muted);font-size:.8rem;"><i class="fa-solid fa-spinner fa-spin me-1"></i>Cargando...</span>';
+
+  fetch('/proveedores/' + id + '/productos/')
+    .then(r => r.json())
+    .then(data => {
+      if (!data.productos || data.productos.length === 0) {
+        chipsEl.innerHTML = '<span style="color:var(--tx-muted);font-size:.82rem;">Sin productos asignados</span>';
+        return;
+      }
+      chipsEl.innerHTML = data.productos.map(p =>
+        '<span class="chip-producto"><i class="fa-solid fa-box" style="font-size:.65rem;opacity:.7;"></i>' + p.nombre + '</span>'
+      ).join('');
+    })
+    .catch(() => { chipsEl.innerHTML = '<span style="color:var(--c-danger);font-size:.8rem;">Error al cargar</span>'; });
+
+  bootstrap.Modal.getOrCreateInstance(document.getElementById('modalVerProveedor')).show();
+}
+
+function abrirEditar(id, nombre, telefono, email, observaciones) {
+  document.getElementById('edit_nombre').value        = nombre;
+  document.getElementById('edit_telefono').value      = telefono;
+  document.getElementById('edit_email').value         = email;
+  document.getElementById('edit_observaciones').value = observaciones || '';
+  document.getElementById('formEditar').action = '/proveedores/editar/' + id + '/';
+  bootstrap.Modal.getOrCreateInstance(document.getElementById('modalEditarProveedor')).show();
+}
+
+var ppProveedorId = null;
+var ppTodosProductos = [];
+
+function gestionarProductos(id, nombre) {
+  ppProveedorId = id;
+  document.getElementById('pp_nombre_proveedor').textContent = nombre;
+  document.getElementById('pp_loading').style.display = 'block';
+  document.getElementById('pp_busqueda').value = '';
+  ppTodosProductos = [];
+
+  bootstrap.Modal.getOrCreateInstance(document.getElementById('modalProductosProveedor')).show();
+
+  fetch('/api/productos/listado/')
+    .then(r => r.json())
+    .then(todosData => {
+      fetch('/proveedores/' + id + '/productos/')
+        .then(r => r.json())
+        .then(asignadosData => {
+          var asignadosIds = new Set((asignadosData.productos || []).map(p => String(p.id)));
+          ppTodosProductos = todosData.productos || [];
+          ppRenderGrid(ppTodosProductos, asignadosIds);
+          document.getElementById('pp_loading').style.display = 'none';
+        });
+    })
+    .catch(() => {
+      document.getElementById('pp_loading').textContent = 'Error al cargar productos.';
+    });
+}
+
+function ppRenderGrid(lista, asignadosIds) {
+  var grid = document.getElementById('pp_grid');
+  Array.from(grid.children).forEach(c => { if (c.id !== 'pp_loading') c.remove(); });
+  lista.forEach(function (p) {
+    var checked = asignadosIds && asignadosIds.has(String(p.id));
+    var card = document.createElement('label');
+    card.className = 'pp-card';
+    card.dataset.nombre = p.nombre.toLowerCase();
+    card.innerHTML =
+      '<input type="checkbox" class="pp-check" value="' + p.id + '"' + (checked ? ' checked' : '') + ' style="display:none;">' +
+      '<div style="display:flex;justify-content:space-between;align-items:flex-start;">' +
+      '  <span style="font-weight:600;font-size:.84rem;color:var(--tx-primary);">' + p.nombre + '</span>' +
+      '  <i class="fa-solid fa-check pp-check-icon" style="color:var(--c-success);' + (checked ? '' : 'display:none;') + '"></i>' +
+      '</div>' +
+      '<div style="font-size:.75rem;color:var(--tx-muted);margin-top:4px;">Stock: ' + p.stock + ' · $' + Number(p.precio).toLocaleString('es-CO') + '</div>';
+    card.style.cssText = 'display:block;background:var(--bg-card);border:1.5px solid ' +
+      (checked ? 'var(--c-success)' : 'var(--bd-default)') +
+      ';border-radius:var(--r-md);padding:12px;cursor:pointer;transition:border-color .15s,background .15s;';
+    card.addEventListener('click', function () {
+      var cb   = this.querySelector('.pp-check');
+      var icon = this.querySelector('.pp-check-icon');
+      cb.checked = !cb.checked;
+      if (cb.checked) {
+        this.style.borderColor = 'var(--c-success)';
+        this.style.background  = 'rgba(39,174,96,.08)';
+        if (icon) icon.style.display = '';
+      } else {
+        this.style.borderColor = 'var(--bd-default)';
+        this.style.background  = 'var(--bg-card)';
+        if (icon) icon.style.display = 'none';
+      }
+      ppActualizarContador();
+    });
+    grid.appendChild(card);
+  });
+  ppActualizarContador();
+}
+
+function ppActualizarContador() {
+  var total = document.querySelectorAll('.pp-check:checked').length;
+  var el = document.getElementById('pp_seleccionados');
+  if (el) el.textContent = total;
+}
+
+document.getElementById('pp_busqueda').addEventListener('input', function () {
+  var q = this.value.toLowerCase();
+  document.querySelectorAll('#pp_grid label').forEach(function (card) {
+    card.style.display = card.dataset.nombre && card.dataset.nombre.includes(q) ? '' : 'none';
+  });
+});
+
+document.getElementById('pp_btn_guardar').addEventListener('click', function () {
+  var ids = Array.from(document.querySelectorAll('.pp-check:checked')).map(c => c.value);
+  var csrf = document.querySelector('[name=csrfmiddlewaretoken]');
+  var token = csrf ? csrf.value : '';
+  fetch('/proveedores/' + ppProveedorId + '/productos/', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'X-CSRFToken': token },
+    body: JSON.stringify({ producto_ids: ids })
+  })
+  .then(r => r.json())
+  .then(data => {
+    if (data.ok) {
+      bootstrap.Modal.getOrCreateInstance(document.getElementById('modalProductosProveedor')).hide();
+      Swal.fire({
+        icon: 'success', title: 'Guardado',
+        text: data.total + ' producto(s) asignados al proveedor.',
+        background: '#0e1420', color: '#f0f4ff', confirmButtonColor: '#27ae60',
+        timer: 2000, timerProgressBar: true
+      }).then(() => location.reload());
+    }
+  })
+  .catch(() => {
+    Swal.fire({ icon: 'error', title: 'Error', text: 'No se pudo guardar.', background: '#0e1420', color: '#f0f4ff' });
+  });
+});
+</script>
+
+<!-- Modal eliminar proveedor (único, dinámico) -->
+<div class="modal fade" id="modalEliminarProv" tabindex="-1" aria-modal="true" role="dialog">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title"><i class="fa-solid fa-triangle-exclamation" style="color:var(--c-danger);"></i> Eliminar Proveedor</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <form method="post" id="formEliminarProv" action="">
+        {% csrf_token %}
+        <div class="modal-body">
+          <p style="color:var(--tx-primary);">¿Eliminar al proveedor <strong style="color:var(--c-gold);" id="nombreProvEliminar"></strong>?</p>
+          <p style="font-size:.84rem;color:var(--c-danger);">Esta acción no se puede deshacer.</p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="submit" class="btn btn-danger"><i class="fa-solid fa-trash"></i> Sí, eliminar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+document.addEventListener('click', function(e) {
+  var btn = e.target.closest('.btn-eliminar-prov');
+  if (!btn) return;
+  var id     = btn.dataset.id;
+  var nombre = btn.dataset.nombre;
+  document.getElementById('nombreProvEliminar').textContent = nombre;
+  document.getElementById('formEliminarProv').action = '/proveedores/eliminar/' + id + '/';
+  bootstrap.Modal.getOrCreateInstance(document.getElementById('modalEliminarProv')).show();
+});
+</script>
+
+{% endblock %}

@@ -1,0 +1,163 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+        font-family: Arial, sans-serif;
+        font-size: 11px;
+        color: #2c2c2c;
+        padding: 30px;
+    }
+
+    /* ── ENCABEZADO GENERAL ── */
+    .header {
+        background-color: #1e3a5f;
+        color: white;
+        padding: 18px 20px;
+        border-radius: 6px;
+        margin-bottom: 6px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+    .header-left h1 { font-size: 20px; font-weight: bold; letter-spacing: 1px; margin-bottom: 4px; }
+    .header-left p { font-size: 10px; opacity: 0.85; }
+    .header-right { text-align: right; font-size: 10px; opacity: 0.9; line-height: 1.7; }
+
+    .divider {
+        height: 4px;
+        background: linear-gradient(to right, #1e3a5f, #4472C4, #a8c4e0);
+        border-radius: 2px;
+        margin-bottom: 18px;
+    }
+
+    /* ── SECCIÓN POR MÓDULO ── */
+    .seccion { margin-bottom: 22px; }
+    .seccion:not(:first-child) { page-break-before: always; }
+
+    .seccion-titulo {
+        background-color: #dce6f1;
+        color: #1e3a5f;
+        font-size: 13px;
+        font-weight: bold;
+        padding: 8px 12px;
+        border-left: 5px solid #4472C4;
+        border-radius: 3px;
+        margin-bottom: 8px;
+    }
+
+    table { width: 100%; border-collapse: collapse; margin-bottom: 10px; }
+    thead th {
+        background-color: #4472C4;
+        color: white;
+        padding: 7px 9px;
+        text-align: center;
+        font-size: 9.5px;
+        font-weight: bold;
+        letter-spacing: 0.4px;
+        border: 1px solid #2e5ba8;
+    }
+    tbody tr:nth-child(odd)  { background-color: #ffffff; }
+    tbody tr:nth-child(even) { background-color: #dce6f1; }
+    tbody td {
+        padding: 5px 9px;
+        border: 1px solid #c8d4e8;
+        font-size: 9.5px;
+        vertical-align: middle;
+    }
+    tbody td:first-child { text-align: center; font-weight: bold; color: #1e3a5f; }
+
+    .seccion-total {
+        text-align: right;
+        font-size: 9.5px;
+        font-weight: bold;
+        color: #1e3a5f;
+        margin-top: 2px;
+    }
+
+    .sin-datos {
+        text-align: center;
+        padding: 18px;
+        color: #888;
+        font-style: italic;
+        font-size: 11px;
+        border: 1px dashed #ccc;
+        border-radius: 4px;
+        margin: 8px 0;
+    }
+
+    /* ── PIE DE PÁGINA ── */
+    .footer {
+        border-top: 2px solid #4472C4;
+        padding-top: 10px;
+        margin-top: 8px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 10px;
+        color: #555;
+    }
+    .footer .total { font-weight: bold; color: #1e3a5f; font-size: 11px; }
+    .footer .fecha-gen { font-style: italic; }
+</style>
+</head>
+
+<body>
+
+    <!-- ENCABEZADO -->
+    <div class="header">
+        <div class="header-left">
+            <h1>{{ titulo }}</h1>
+            <p>Sistema de Inventario — Tienda de Barrio</p>
+        </div>
+        <div class="header-right">
+            <strong>Fecha de generación</strong><br>
+            {{ fecha_generacion }}<br>
+            <span style="opacity:0.7">Total de registros: {{ total_registros }}</span>
+        </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- SECCIONES: una por módulo -->
+    {% for seccion in secciones %}
+    <div class="seccion">
+        <div class="seccion-titulo">{{ seccion.titulo }}</div>
+        {% if seccion.datos %}
+        <table>
+            <thead>
+                <tr>
+                    {% for columna in seccion.columnas %}
+                    <th>{{ columna }}</th>
+                    {% endfor %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for fila in seccion.datos %}
+                <tr>
+                    {% for valor in fila %}
+                    <td>{{ valor }}</td>
+                    {% endfor %}
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <div class="seccion-total">Registros: {{ seccion.datos|length }}</div>
+        {% else %}
+        <div class="sin-datos">No hay registros para mostrar.</div>
+        {% endif %}
+    </div>
+    {% endfor %}
+
+    <!-- PIE DE PÁGINA -->
+    <div class="footer">
+        <span class="total">Total general de registros: {{ total_registros }}</span>
+        <span class="fecha-gen">Generado el: {{ fecha_generacion }}</span>
+    </div>
+
+</body>
+</html>

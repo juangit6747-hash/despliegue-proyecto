@@ -1,0 +1,82 @@
+<!-- Modal Editar -->
+<div class="modal fade" id="modalEditar{{ producto.idProducto }}" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="fa-solid fa-pen me-2"></i>Editar Producto</h5>
+                <button type="button" class="btn-close btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="POST" action="{% url 'editar_producto' producto.idProducto %}">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-semibold">Nombre <span class="text-danger">*</span></label>
+                            <input type="text" name="nombre" class="form-control"
+                                   value="{{ producto.nombre }}" required minlength="3" maxlength="100">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-semibold">Precio <span class="text-danger">*</span></label>
+                            <div class="input-group">
+                                <span class="input-group-text">$</span>
+                                <input type="number" name="precio" class="form-control"
+                                       value="{{ producto.precio|floatformat:0 }}" required min="1" max="800000">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-semibold">Stock <span class="text-danger">*</span></label>
+                            <input type="number" name="stock" class="form-control"
+                                   value="{{ producto.stock }}" required min="0" max="1000">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-semibold">Marca <span class="text-danger">*</span></label>
+                            <select name="idMarca" class="form-select select2-editar-{{ producto.idProducto }}" required>
+                                <option value="">Seleccione una marca</option>
+                                {% for marca in marcas %}
+                                    <option value="{{ marca.idMarca }}"
+                                        {% if producto.idMarca.idMarca == marca.idMarca %}selected{% endif %}>
+                                        {{ marca.nombreMarca }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-semibold">Tipo de Producto <span class="text-danger">*</span></label>
+                            <select name="idTipo" class="form-select select2-editar-{{ producto.idProducto }}" required>
+                                <option value="">Seleccione un tipo</option>
+                                {% for tipo in tipos %}
+                                    <option value="{{ tipo.idTipo }}"
+                                        {% if producto.idTipo.idTipo == tipo.idTipo %}selected{% endif %}>
+                                        {{ tipo.nombre_tipo }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-semibold">Unidad de Medida <span class="text-danger">*</span></label>
+                            <select name="idUnidad" class="form-select select2-editar-{{ producto.idProducto }}" required>
+                                <option value="">Seleccione una unidad</option>
+                                {% for unidad in unidades %}
+                                    <option value="{{ unidad.idUnidad }}"
+                                        {% if producto.idUnidad.idUnidad == unidad.idUnidad %}selected{% endif %}>
+                                        {{ unidad.nombre_unidad }} ({{ unidad.abreviatura }})
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary px-4">
+                        <i class="fa-solid fa-floppy-disk me-1"></i> Actualizar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

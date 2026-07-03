@@ -1,0 +1,162 @@
+{% extends 'base.html' %}
+{% load static humanize %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Detalle de Venta #{{ venta.id }}</h2>
+    <a href="{% url 'ventas' %}" class="btn btn-secondary">
+        <i class="fa-solid fa-arrow-left me-1"></i> Volver
+    </a>
+</div>
+
+{% if messages %}
+  {% for message in messages %}
+    <div class="alert {% if message.tags == 'error' %}alert-danger{% else %}alert-success{% endif %} alert-dismissible fade show">
+      {{ message }}
+      <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+  {% endfor %}
+{% endif %}
+
+<div class="card mb-4">
+    <div class="card-header bg-dark text-white">Información de la Venta</div>
+    <div class="card-body">
+        <table class="table table-bordered">
+            <tr><th width="30%">ID:</th><td>{{ venta.id }}</td></tr>
+            <tr><th>Cliente:</th><td>{{ venta.cliente }}</td></tr>
+            <tr><th>Fecha:</th><td>{{ venta.fecha|date:"d/m/Y H:i" }}</td></tr>
+            <tr><th>Estado:</th><td>
+                <span class="badge {% if venta.estado == 'Completada' %}bg-success{% else %}bg-warning text-dark{% endif %}">
+                    {{ venta.estado }}
+                </span>
+            </td></tr>
+            <tr><th>Total:</th><td><strong>${{ venta.total|floatformat:0|intcomma }}</strong></td></tr>
+        </table>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header bg-dark text-white">Productos</div>
+    <div class="card-body p-0">
+        <table class="table table-hover mb-0">
+            <thead class="table-dark">
+                <tr>
+                    <th>Producto</th>
+                    <th class="text-center">Cantidad</th>
+                    <th class="text-end">Precio unitario</th>
+                    <th class="text-end">Subtotal</th>
+                    <th class="text-center">Devoluciones</th>
+                    <th class="text-center">Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for detalle in venta.detalles.all %}
+                <tr>
+                    <td>{{ detalle.producto_nombre }}</td>
+                    <td class="text-center">{{ detalle.cantidad }}</td>
+                    <td class="text-end">${{ detalle.precio|floatformat:0|intcomma }}</td>
+                    <td class="text-end">${{ detalle.subtotal|floatformat:0|intcomma }}</td>
+                    <td class="text-center">
+                        {% if detalle.cantidad_devuelta > 0 %}
+                            <span class="badge bg-warning text-dark" title="Unidades devueltas">{{ detalle.cantidad_devuelta }} devuelta(s)</span>
+                        {% else %}
+                            <span class="text-muted">—</span>
+                        {% endif %}
+                    </td>
+                    <td class="text-center">
+                        {% if venta.estado == 'Completada' and detalle.cantidad_disponible_devolucion > 0 %}
+                        <button class="btn btn-sm btn-outline-warning" data-bs-toggle="modal"
+                                data-bs-target="#modalDevolverDetalle{{ detalle.id }}" title="Registrar devolución">
+                            <i class="fa-solid fa-rotate-left"></i> Devolver
+                        </button>
+                        {% else %}
+                            <span class="text-muted">—</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% if detalle.devoluciones.all %}
+                <tr>
+                    <td colspan="6" style="background:#fffbea;">
+                        <div style="font-size:.82rem;">
+                            <strong><i class="fa-solid fa-rotate-left"></i> Historial de devoluciones:</strong>
+                            {% for d in detalle.devoluciones.all %}
+                            <div style="padding:4px 0;">
+                                {{ d.cantidad }} uds. — {{ d.get_motivo_display }}
+                                <span class="text-muted">· {{ d.fecha|date:"d/m/Y" }}</span>
+                                {% if d.restablecer_stock %}
+                                    <span class="badge bg-success">Repuesto a inventario</span>
+                                {% else %}
+                                    <span class="badge bg-secondary">Descartado</span>
+                                {% endif %}
+                                {% if d.observaciones %}<br><span class="text-muted">{{ d.observaciones }}</span>{% endif %}
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </td>
+                </tr>
+                {% endif %}
+                {% empty %}
+                <tr><td colspan="6" class="text-center text-muted py-3">Sin productos</td></tr>
+                {% endfor %}
+            </tbody>
+            <tfoot>
+                <tr class="table-dark">
+                    <th colspan="3" class="text-end">Total:</th>
+                    <th class="text-end">${{ venta.total|floatformat:0|intcomma }}</th>
+                    <th colspan="2"></th>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+</div>
+
+<!-- Modales de devolución por línea de producto -->
+{% for detalle in venta.detalles.all %}
+{% if venta.estado == 'Completada' and detalle.cantidad_disponible_devolucion > 0 %}
+<div class="modal fade" id="modalDevolverDetalle{{ detalle.id }}" tabindex="-1" aria-modal="true" role="dialog">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <form method="POST" action="{% url 'crear_devolucion_venta' detalle.id %}">
+        {% csrf_token %}
+        <div class="modal-header">
+          <h5 class="modal-title"><i class="fa-solid fa-rotate-left me-1"></i> Devolución — {{ detalle.producto_nombre }}</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <p class="text-muted" style="font-size:.88rem;">
+            Cliente: {{ venta.cliente }}<br>
+            Disponibles para devolver: <strong>{{ detalle.cantidad_disponible_devolucion }}</strong> de {{ detalle.cantidad }}
+          </p>
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Cantidad a devolver</label>
+            <input type="number" name="cantidad" class="form-control" min="1"
+                   max="{{ detalle.cantidad_disponible_devolucion }}" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Motivo</label>
+            <select name="motivo" class="form-select" required>
+              <option value="vencido">Producto vencido</option>
+              <option value="danado">Producto dañado</option>
+              <option value="arrepentimiento">Cliente se arrepintió</option>
+              <option value="otro">Otro motivo</option>
+            </select>
+            <small class="text-muted">Si es "vencido" o "dañado", el producto NO vuelve al inventario. Cualquier otro motivo, sí.</small>
+          </div>
+          <div class="mb-1">
+            <label class="form-label fw-semibold">Observaciones (opcional)</label>
+            <textarea name="observaciones" class="form-control" rows="2"></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="submit" class="btn btn-warning px-4">
+            <i class="fa-solid fa-rotate-left me-1"></i> Registrar devolución
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endif %}
+{% endfor %}
+{% endblock %}

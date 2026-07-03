@@ -1,0 +1,34 @@
+{% if alertas_vencimiento %}
+<div class="venc-banner" id="alertas-vencimiento-container">
+  <div class="venc-banner-left">
+    <div class="venc-banner-icon" title="Alerta de vencimiento">
+      <i class="fa-solid fa-hourglass-end"></i>
+    </div>
+    <div class="venc-banner-body">
+      <div class="venc-banner-title">
+        {% if alertas_vencimiento_vencidos > 0 %}
+          ¡Atención! —
+          {% with v=alertas_vencimiento_vencidos %}
+            {{ v }} producto{{ v|pluralize }} vencido{{ v|pluralize }}
+          {% endwith %}
+        {% else %}
+          Productos próximos a vencer
+        {% endif %}
+      </div>
+      <div class="venc-banner-sub">Revisa las fechas de vencimiento para evitar pérdidas de inventario.</div>
+      <div class="venc-tags">
+        {% for a in alertas_vencimiento %}
+        <span class="venc-tag venc-tag-{{ a.estado }}" title="{{ a.nombre }} — {{ a.fecha_vencimiento|date:'d/m/Y' }}">
+          <span class="venc-tag-dot venc-dot-{{ a.estado }}"></span>
+          {{ a.nombre }}
+          <span class="venc-tag-label">{{ a.label }}</span>
+        </span>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+  <button class="venc-banner-close" onclick="this.closest('.venc-banner').style.display='none'" title="Cerrar aviso">
+    <i class="fa-solid fa-xmark"></i>
+  </button>
+</div>
+{% endif %}

@@ -1,0 +1,180 @@
+/*
+ * filtros_realtime.css — Filtros en tiempo real
+ * Requiere: tokens.css
+ * NO declara :root.
+ */
+
+.rt-filter-bar {
+  background: var(--bg-card);
+  border: 1px solid var(--bd-default);
+  border-radius: var(--r-md);
+  padding: 20px 24px;
+  margin-bottom: 20px;
+  position: relative;
+  transition: border-color var(--tr-base), box-shadow var(--tr-base);
+}
+
+.rt-filter-bar::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--c-red), var(--c-gold));
+  border-radius: var(--r-md) var(--r-md) 0 0;
+  opacity: 0;
+  transition: opacity var(--tr-slow);
+}
+
+.rt-filter-bar--active {
+  border-color: var(--bd-active);
+  box-shadow: 0 0 0 3px var(--c-red-glow);
+}
+
+.rt-filter-bar--active::before { opacity: 1; }
+
+.rt-filter-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(175px, 1fr));
+  gap: 14px;
+  align-items: end;
+}
+
+.rt-filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.rt-filter-label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--tx-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  user-select: none;
+}
+
+.rt-filter-label i { font-size: 0.68rem; color: var(--c-red); }
+
+.rt-filter-input,
+.rt-filter-select {
+  width: 100%;
+  padding: 9px 13px;
+  background: var(--bg-input);
+  border: 1px solid var(--bd-default);
+  border-radius: var(--r-sm);
+  color: var(--tx-primary);
+  font-size: 0.85rem;
+  font-family: var(--font-body);
+  transition: all var(--tr-base);
+  outline: none;
+  -webkit-appearance: none;
+}
+
+.rt-filter-select {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath fill='%238899bb' d='M0 0l5 5 5-5z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  padding-right: 34px;
+  cursor: pointer;
+}
+
+.rt-filter-select option { background: #0e1420; color: var(--tx-primary); }
+
+.rt-filter-input:focus,
+.rt-filter-select:focus {
+  border-color: var(--c-red);
+  box-shadow: 0 0 0 3px var(--c-red-l);
+  background: rgba(8,14,24,0.95);
+}
+
+.rt-filter-input::placeholder {
+  color: var(--tx-muted);
+  font-style: italic;
+  font-size: 0.8rem;
+}
+
+.rt-filter-input:not(:placeholder-shown) {
+  border-color: rgba(192,57,43,0.40);
+  background: rgba(192,57,43,0.04);
+}
+
+.rt-input-wrapper { position: relative; }
+
+.rt-input-wrapper .rt-input-icon {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--tx-muted);
+  font-size: 0.78rem;
+  pointer-events: none;
+  transition: color var(--tr-base);
+}
+
+.rt-input-wrapper .rt-filter-input { padding-left: 50px !important; }
+.rt-input-wrapper:focus-within .rt-input-icon { color: var(--c-red); }
+
+.rt-filter-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  justify-content: flex-end;
+}
+
+.rt-btn-clear {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 9px 16px;
+  background: transparent;
+  border: 1px solid var(--bd-default);
+  border-radius: var(--r-sm);
+  color: var(--tx-secondary);
+  font-size: 0.8rem;
+  font-weight: 600;
+  font-family: var(--font-body);
+  cursor: pointer;
+  transition: all var(--tr-base);
+  white-space: nowrap;
+}
+
+.rt-btn-clear:hover {
+  border-color: var(--c-danger);
+  color: var(--c-danger);
+  background: var(--c-danger-l);
+  transform: translateY(-1px);
+}
+
+.rt-filter-count {
+  font-size: 0.72rem;
+  color: var(--tx-muted);
+  text-align: center;
+  font-weight: 500;
+  min-height: 16px;
+  transition: color var(--tr-base);
+}
+
+.rt-filter-bar--active .rt-filter-count { color: var(--c-gold); }
+
+tbody tr[data-filter-row]  { transition: opacity 0.16s ease; }
+tbody tr.filter-hidden     { opacity: 0; pointer-events: none; }
+tbody tr.filter-visible    { opacity: 1; }
+
+tr[data-filter-empty] td {
+  text-align: center;
+  padding: 40px 16px;
+  color: var(--tx-muted);
+  font-size: 0.875rem;
+}
+
+@media (max-width: 768px) {
+  .rt-filter-bar    { padding: 14px; }
+  .rt-filter-grid   { grid-template-columns: 1fr; gap: 10px; }
+  .rt-filter-actions { flex-direction: row; }
+  .rt-btn-clear     { flex: 1; }
+}

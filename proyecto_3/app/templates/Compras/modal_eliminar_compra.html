@@ -1,0 +1,28 @@
+<div class="modal fade" id="modalEliminarCompra{{ compra.idCompra }}" tabindex="-1" aria-modal="true" role="dialog">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">
+          <i class="fa-solid fa-triangle-exclamation" style="color:var(--c-danger);"></i> Eliminar Compra
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <form method="POST" action="{% url 'modal_eliminar_compra' compra.idCompra %}">
+        {% csrf_token %}
+        <div class="modal-body">
+          <p style="color:var(--tx-primary);">
+            ¿Eliminar la compra <strong style="color:var(--c-gold);">#{{ compra.idCompra }}</strong>
+            — {{ compra.Producto.nombre }} de {{ compra.Proveedor.nombre }}?
+          </p>
+          <p style="font-size:.84rem;color:var(--c-danger);">Esta acción no se puede deshacer.</p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="submit" class="btn btn-danger">
+            <i class="fa-solid fa-trash"></i> Sí, eliminar
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

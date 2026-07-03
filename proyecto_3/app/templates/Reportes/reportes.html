@@ -1,0 +1,271 @@
+{% extends 'base.html' %}
+{% block page_header_title %}<i class="fa-solid fa-chart-line me-2"></i>Reportes{% endblock %}
+
+{% load static %}
+
+{% block content %}
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{% static 'css/reporte.css' %}">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<div class="rep-wrap">
+
+  <!-- Header -->
+  <div class="rep-header">
+    <div class="rep-header-icon"><i class="fa-solid fa-chart-line"></i></div>
+    <div>
+      <h1>Sistema de Reportes</h1>
+      <p>Dashboard · Inventario · Análisis</p>
+    </div>
+
+    <div class="rep-export-actions" style="margin-left:auto;display:flex;gap:8px;">
+      <a href="{% url 'exportar_general_excel' %}" class="btn rep-btn-export rep-btn-excel"
+         title="Descargar reporte general en Excel (todos los módulos, una hoja por módulo)">
+        <i class="fa-solid fa-file-excel"></i> Excel general
+      </a>
+      <a href="{% url 'exportar_general_pdf' %}" class="btn rep-btn-export rep-btn-pdf"
+         title="Descargar reporte general en PDF (todos los módulos)">
+        <i class="fa-solid fa-file-pdf"></i> PDF general
+      </a>
+    </div>
+
+  </div>
+
+  <!-- Alertas -->
+  {% if alertas_stock %}
+  <div class="alert-banner" id="alertas-container">
+    <div class="alert-banner-left">
+      <div class="alert-banner-icon">
+        <i class="fa-solid fa-circle-exclamation"></i>
+      </div>
+      <div class="alert-banner-body">
+        <div class="alert-banner-title">
+          ¡Acción requerida! —
+          {% with out=alertas_stock|length %}
+            {{ out }} producto{{ out|pluralize }} con problemas de inventario
+          {% endwith %}
+        </div>
+        <div class="alert-banner-sub">Revisa y reabastece los siguientes productos para evitar interrupciones en las ventas.</div>
+        <div class="alert-tags">
+          {% for a in alertas_stock %}
+          <span class="alert-tag alert-tag-{{ a.estado }}">
+            <span class="alert-tag-dot dot-{{ a.estado }}"></span>
+            {{ a.nombre }}
+            <span class="alert-tag-label">{% if a.estado == 'out' %}Sin stock{% else %}{{ a.stock }} uds{% endif %}</span>
+          </span>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+    <button class="alert-banner-close" onclick="this.closest('.alert-banner').style.display='none'" title="Cerrar">
+      <i class="fa-solid fa-xmark"></i>
+    </button>
+  </div>
+  {% endif %}
+
+  <!-- KPIs -->
+  <div class="kpi-grid">
+    <div class="kpi-card">
+      <div class="kpi-icon ki-blue"><i class="fa-solid fa-box"></i></div>
+      <div class="kpi-label">Productos</div>
+      <div class="kpi-value">{{ total_productos }}</div>
+      <div class="kpi-sub" id="kpi-stock-bajo">{{ stock_bajo }} con stock bajo</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-icon ki-green"><i class="fa-solid fa-users"></i></div>
+      <div class="kpi-label">Clientes</div>
+      <div class="kpi-value">{{ total_clientes }}</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-icon ki-purple"><i class="fa-solid fa-truck"></i></div>
+      <div class="kpi-label">Proveedores</div>
+      <div class="kpi-value">{{ total_proveedores }}</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-icon ki-cyan"><i class="fa-solid fa-bag-shopping"></i></div>
+      <div class="kpi-label">Compras</div>
+      <div class="kpi-value">{{ total_compras }}</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-icon ki-yellow"><i class="fa-solid fa-cart-shopping"></i></div>
+      <div class="kpi-label">Ventas del Mes</div>
+      <div class="kpi-value" id="kpi-ventas-mes">$ {{ total_ventas_mes|floatformat:0 }}</div>
+      <div class="kpi-sub" id="kpi-transacciones">{{ transacciones_mes }} transacciones</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-icon ki-green"><i class="fa-solid fa-circle-dollar-to-slot"></i></div>
+      <div class="kpi-label">Ingreso Total</div>
+      <div class="kpi-value" id="kpi-ingreso-total">$ {{ ingreso_total|floatformat:0 }}</div>
+      <div class="kpi-sub">Acumulado total</div>
+    </div>
+  </div>
+
+  <!-- Tabs -->
+  <div class="tabs-wrap">
+    <div class="tabs-header">
+      <button class="tab-btn" onclick="switchTabReporte('productos',this)"><i class="fa-solid fa-box"></i> Productos</button>
+      <button class="tab-btn" onclick="switchTabReporte('clientes',this)"><i class="fa-solid fa-users"></i> Clientes</button>
+      <button class="tab-btn" onclick="switchTabReporte('ventas',this)"><i class="fa-solid fa-cart-shopping"></i> Ventas</button>
+      <button class="tab-btn" onclick="switchTabReporte('proveedores',this)"><i class="fa-solid fa-truck"></i> Proveedores</button>
+      <button class="tab-btn" onclick="switchTabReporte('compras',this)"><i class="fa-solid fa-bag-shopping"></i> Compras</button>
+      <button class="tab-btn active" onclick="switchTabReporte('todo',this)"><i class="fa-solid fa-table-cells"></i> Todo</button>
+    </div>
+
+    <!-- PRODUCTOS -->
+    <div id="panel-productos" class="tab-panel">
+      <div class="chart-row">
+        <div class="chart-card"><div class="chart-card-title"><i class="fa-solid fa-chart-bar"></i> Stock por producto</div><canvas id="chartProductosStock" height="160"></canvas></div>
+        <div class="chart-card"><div class="chart-card-title"><i class="fa-solid fa-chart-pie"></i> Estado del inventario</div><canvas id="chartProductosEstado" height="160"></canvas></div>
+      </div>
+      <div class="section-label">Productos registrados</div>
+      <div class="table-wrap"><table><thead><tr><th>ID</th><th>Nombre</th><th>Precio</th><th>Stock</th><th>Disponibilidad</th><th>Estado</th></tr></thead><tbody>
+        {% for p in productos_data %}
+        <tr><td>#{{ p.id }}</td><td>{{ p.nombre }}</td><td class="price">$ {{ p.precio|floatformat:0 }}</td><td>{{ p.stock }}</td>
+        <td><div class="sbar"><div class="sbar-track"><div class="sbar-fill sf-{{ p.estado }}" style="width:{{ p.pct }}%"></div></div><span class="sbar-pct">{{ p.pct }}%</span></div></td>
+        <td>{% if p.estado == 'ok' %}<span class="badge badge-ok">Normal</span>{% elif p.estado == 'low' %}<span class="badge badge-low">Bajo</span>{% else %}<span class="badge badge-out">Sin stock</span>{% endif %}</td></tr>
+        {% empty %}<tr><td colspan="6" style="text-align:center;padding:24px;color:#94a3b8">Sin datos</td></tr>{% endfor %}
+      </tbody></table></div>
+    </div>
+
+    <!-- CLIENTES -->
+    <div id="panel-clientes" class="tab-panel">
+      <div class="chart-row">
+        <div class="chart-card"><div class="chart-card-title"><i class="fa-solid fa-chart-bar"></i> Top clientes por compras</div><canvas id="chartClientesTop" height="160"></canvas></div>
+        <div class="chart-card"><div class="chart-card-title"><i class="fa-solid fa-chart-pie"></i> Activos vs Inactivos</div><canvas id="chartClientesEstado" height="160"></canvas></div>
+      </div>
+      <div class="section-label">Clientes registrados</div>
+      <div class="table-wrap"><table><thead><tr><th>ID</th><th>Nombre</th><th>Email</th><th>Teléfono</th><th>Total Compras</th><th>Estado</th></tr></thead><tbody>
+        {% for c in clientes_data %}
+        <tr><td>#{{ c.id }}</td><td>{{ c.nombre }}</td><td>{{ c.email }}</td><td>{{ c.telefono }}</td>
+        <td class="price">$ {{ c.total_compras|floatformat:0 }}</td>
+        <td>{% if c.estado == 'activo' %}<span class="badge badge-activo">Activo</span>{% else %}<span class="badge badge-inactivo">Inactivo</span>{% endif %}</td></tr>
+        {% empty %}<tr><td colspan="6" style="text-align:center;padding:24px;color:#94a3b8">Sin datos</td></tr>{% endfor %}
+      </tbody></table></div>
+    </div>
+
+    <!-- VENTAS -->
+    <div id="panel-ventas" class="tab-panel">
+      <div class="chart-row">
+        <div class="chart-card"><div class="chart-card-title"><i class="fa-solid fa-chart-line"></i> <span class="live-dot" style="margin-right:4px"></span>Ventas por día</div><canvas id="chartVentasDia" height="160"></canvas></div>
+        <div class="chart-card"><div class="chart-card-title"><i class="fa-solid fa-chart-pie"></i> Estado de ventas</div><canvas id="chartVentasEstado" height="160"></canvas></div>
+      </div>
+      <div class="section-label">Ventas registradas</div>
+      <div class="table-wrap"><table><thead><tr><th>ID</th><th>Cliente</th><th>Producto</th><th>Cant.</th><th>Total</th><th>Fecha</th><th>Estado</th></tr></thead><tbody>
+        {% for v in ventas_data %}
+        <tr><td>V{{ v.id|stringformat:"03d" }}</td><td>{{ v.cliente }}</td><td>{{ v.producto }}</td><td>{{ v.cantidad }}</td>
+        <td class="price">$ {{ v.total|floatformat:0 }}</td><td>{{ v.fecha|date:"Y-m-d" }}</td>
+        <td>{% if v.estado == 'Completada' %}<span class="badge badge-paid">Completada</span>{% else %}<span class="badge badge-pend">Pendiente</span>{% endif %}</td></tr>
+        {% empty %}<tr><td colspan="7" style="text-align:center;padding:24px;color:#94a3b8">Sin datos</td></tr>{% endfor %}
+      </tbody></table></div>
+    </div>
+
+    <!-- PROVEEDORES -->
+    <div id="panel-proveedores" class="tab-panel">
+      <div class="chart-row">
+        <div class="chart-card" style="grid-column:1/-1"><div class="chart-card-title"><i class="fa-solid fa-chart-bar"></i> Compras por proveedor</div><canvas id="chartProveedores" height="90"></canvas></div>
+      </div>
+      <div class="section-label">Proveedores registrados</div>
+      <div class="table-wrap"><table><thead><tr><th>ID</th><th>Nombre</th><th>Email</th><th>Teléfono</th><th>Días Envío</th><th>Compras</th><th>Registro</th></tr></thead><tbody>
+        {% for p in proveedores_data %}
+        <tr><td>#{{ p.id }}</td><td>{{ p.nombre }}</td><td>{{ p.email }}</td><td>{{ p.telefono }}</td>
+        <td>{{ p.envio }} días</td><td><span class="badge badge-compra">{{ p.num_compras }}</span></td><td>{{ p.fecha }}</td></tr>
+        {% empty %}<tr><td colspan="7" style="text-align:center;padding:24px;color:#94a3b8">Sin datos</td></tr>{% endfor %}
+      </tbody></table></div>
+    </div>
+
+    <!-- COMPRAS -->
+    <div id="panel-compras" class="tab-panel">
+      <div class="chart-row">
+        <div class="chart-card"><div class="chart-card-title"><i class="fa-solid fa-chart-line"></i> Compras por día</div><canvas id="chartComprasDia" height="160"></canvas></div>
+        <div class="chart-card"><div class="chart-card-title"><i class="fa-solid fa-chart-pie"></i> Estado de compras</div><canvas id="chartComprasEstado" height="160"></canvas></div>
+      </div>
+      <div class="section-label">Compras registradas</div>
+      <div class="table-wrap"><table><thead><tr><th>ID</th><th>Producto</th><th>Proveedor</th><th>Administrador</th><th>Fecha</th><th>Estado</th></tr></thead><tbody>
+        {% for c in compras_data %}
+        <tr><td>C{{ c.id|stringformat:"03d" }}</td><td>{{ c.producto }}</td><td>{{ c.proveedor }}</td><td>{{ c.admin }}</td>
+        <td>{{ c.fecha }}</td>
+        <td>{% if c.estado == 'Completada' %}<span class="badge badge-paid">Completada</span>{% else %}<span class="badge badge-pend">Pendiente</span>{% endif %}</td></tr>
+        {% empty %}<tr><td colspan="6" style="text-align:center;padding:24px;color:#94a3b8">Sin datos</td></tr>{% endfor %}
+      </tbody></table></div>
+    </div>
+
+    <!-- TODO -->
+    <div id="panel-todo" class="tab-panel active">
+      <div class="chart-row">
+        <div class="chart-card" style="grid-column:1/-1">
+          <div class="chart-card-title"><i class="fa-solid fa-chart-bar"></i> <span class="live-dot" style="margin-right:4px"></span>Ventas vs Compras por período</div>
+          <canvas id="chartTodo" height="90"></canvas>
+        </div>
+      </div>
+      <div class="todo-grid">
+        <div class="mc"><div class="mc-head"><i class="fa-solid fa-box"></i> Productos</div>
+          {% for p in productos_mini %}<div class="mc-row"><span class="mc-name">{{ p.nombre }}</span><span class="mc-val {% if p.estado == 'ok' %}mv-ok{% elif p.estado == 'low' %}mv-low{% else %}mv-out{% endif %}">{% if p.estado == 'out' %}Sin stock{% else %}{{ p.stock }} uds{% endif %}</span></div>{% endfor %}
+        </div>
+        <div class="mc"><div class="mc-head"><i class="fa-solid fa-users"></i> Clientes</div>
+          {% for c in clientes_mini %}<div class="mc-row"><span class="mc-name">{{ c.nombre }}</span><span class="mc-val mv-ok">$ {{ c.total_compras|floatformat:0 }}</span></div>{% endfor %}
+        </div>
+        <div class="mc"><div class="mc-head"><i class="fa-solid fa-cart-shopping"></i> Ventas recientes</div>
+          {% for v in ventas_mini %}<div class="mc-row"><span class="mc-name">V{{ v.id|stringformat:"03d" }} · {{ v.producto }}</span><span class="mc-val {% if v.estado == 'Completada' %}mv-ok{% else %}mv-low{% endif %}">{% if v.estado == 'Completada' %}$ {{ v.total|floatformat:0 }}{% else %}Pendiente{% endif %}</span></div>{% endfor %}
+        </div>
+        <div class="mc"><div class="mc-head"><i class="fa-solid fa-truck"></i> Proveedores</div>
+          {% for p in proveedores_mini %}<div class="mc-row"><span class="mc-name">{{ p.nombre }}</span><span class="mc-val mv-def">{{ p.num_compras }} compras</span></div>{% endfor %}
+        </div>
+      </div>
+      <div class="table-header-bar">Todas las transacciones</div>
+      <div class="table-wrap"><table><thead><tr><th>ID</th><th>Módulo</th><th>Descripción</th><th>Valor</th><th>Fecha</th><th>Estado</th></tr></thead><tbody>
+        {% for t in todas %}
+        <tr><td>{{ t.id }}</td>
+        <td>{% if t.tipo == 'venta' %}<span class="badge badge-venta">Venta</span>{% else %}<span class="badge badge-compra">Compra</span>{% endif %}</td>
+        <td>{{ t.descripcion }}</td>
+        <td class="price">{% if t.valor %}$ {{ t.valor|floatformat:0 }}{% else %}—{% endif %}</td>
+        <td>{{ t.fecha }}</td>
+        <td>{% if t.estado == 'Completada' or t.estado == True %}<span class="badge badge-paid">Completada</span>{% else %}<span class="badge badge-pend">Pendiente</span>{% endif %}</td></tr>
+        {% empty %}<tr><td colspan="6" style="text-align:center;padding:24px;color:#94a3b8">Sin datos</td></tr>{% endfor %}
+      </tbody></table></div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Datos del contexto Django para el JS externo -->
+<script>
+  window.CHART_DATA = {
+    graf_productos_labels:    {{ graf_productos_labels|safe }},
+    graf_productos_stock:     {{ graf_productos_stock|safe }},
+    productos_estado: [
+      {{ productos_data|length }} - {{ alertas_stock|length }},
+      {% with c=0 %}{% for p in alertas_stock %}{% if p.estado == 'low' %}1+{% endif %}{% endfor %}0{% endwith %},
+      {% with c=0 %}{% for p in alertas_stock %}{% if p.estado == 'out' %}1+{% endif %}{% endfor %}0{% endwith %}
+    ],
+    graf_clientes_labels:     {{ graf_clientes_labels|safe }},
+    graf_clientes_valores:    {{ graf_clientes_valores|safe }},
+    clientes_activos:         {{ clientes_activos }},
+    clientes_inactivos:       {{ clientes_inactivos }},
+    graf_ventas_labels:       {{ graf_ventas_labels|safe }},
+    graf_ventas_valores:      {{ graf_ventas_valores|safe }},
+    ventas_completadas:       {{ ventas_completadas }},
+    ventas_pendientes:        {{ ventas_pendientes }},
+    graf_proveedores_labels:  {{ graf_proveedores_labels|safe }},
+    graf_proveedores_valores: {{ graf_proveedores_valores|safe }},
+    graf_compras_labels:      {{ graf_compras_labels|safe }},
+    graf_compras_valores:     {{ graf_compras_valores|safe }},
+    compras_completadas:      {{ compras_completadas }},
+    compras_pendientes:       {{ compras_pendientes }},
+    graf_todo_labels:         {{ graf_todo_labels|safe }},
+    graf_todo_ventas:         {{ graf_todo_ventas|safe }},
+    graf_todo_compras:        {{ graf_todo_compras|safe }},
+  };
+</script>
+<script src="{% static 'js/reporte.js' %}"></script>
+
+<script>
+function switchTabReporte(tabId, btn) {
+  document.querySelectorAll('.tab-panel').forEach(function(p) { p.classList.remove('active'); });
+  document.querySelectorAll('.tab-btn').forEach(function(b) { b.classList.remove('active'); });
+  var panel = document.getElementById('panel-' + tabId);
+  if (panel) panel.classList.add('active');
+  if (btn) btn.classList.add('active');
+}
+</script>
+
+{% endblock %}

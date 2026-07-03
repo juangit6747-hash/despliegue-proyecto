@@ -1,0 +1,309 @@
+/*
+ * reporte.css — Estilos exclusivos del módulo de reportes
+ * Requiere: tokens.css cargado antes que este archivo.
+ * SCOPE: Todo está dentro de .rep-wrap para evitar contaminación global.
+ * NO declara :root. Variables de reporte son locales a .rep-wrap.
+ */
+
+/* ── Variables locales del reporte (scoped, NO globales) ──────── */
+.rep-wrap {
+    /* Colores del reporte (tema claro, diferente al dark global) */
+    --rep-primary:     #2563eb;
+    --rep-success:     #16a34a;
+    --rep-danger:      #dc2626;
+    --rep-warning:     #ca8a04;
+    --rep-purple:      #7c3aed;
+    --rep-cyan:        #0891b2;
+    --rep-bg-body:     #f1f5f9;
+    --rep-bg-card:     #ffffff;
+    --rep-text-main:   #1e293b;
+    --rep-text-muted:  #64748b;
+    --rep-border:      #e2e8f0;
+    --rep-radius:      16px;
+    --rep-shadow:      0 10px 15px -3px rgba(0, 0, 0, 0.05),
+                       0 4px 6px -2px rgba(0, 0, 0, 0.05);
+
+    /* Layout */
+    padding: 2rem;
+    background-color: var(--rep-bg-body);
+    font-family: 'DM Sans', sans-serif;
+    color: var(--rep-text-main);
+    font-size: 16px;
+    line-height: 1.55;
+}
+
+/* ── Header ───────────────────────────────────────────────────── */
+.rep-wrap .rep-header {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.rep-wrap .rep-header-icon {
+    width: 56px;
+    height: 56px;
+    background: var(--rep-primary);
+    color: white;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.30);
+}
+
+.rep-wrap .rep-header h1 {
+    font-size: 1.75rem;
+    font-weight: 700;
+    margin: 0;
+}
+
+.rep-wrap .rep-header p {
+    color: var(--rep-text-muted);
+    margin: 0;
+}
+
+.rep-wrap .live-badge {
+    margin-left: auto;
+    background: white;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    border: 1px solid var(--rep-border);
+}
+
+.rep-wrap .live-dot {
+    height: 8px;
+    width: 8px;
+    background-color: #ef4444;
+    border-radius: 50%;
+    display: inline-block;
+    margin-right: 5px;
+    animation: rep-blink 1.5s infinite;
+}
+
+@keyframes rep-blink {
+    0%   { opacity: 1; }
+    50%  { opacity: 0.3; }
+    100% { opacity: 1; }
+}
+
+/* ── Botones de exportación general ──────────────────────────── */
+.rep-wrap .rep-btn-export {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 9px 16px;
+    border-radius: 10px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-decoration: none;
+    border: 1px solid transparent;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.rep-wrap .rep-btn-export:hover {
+    transform: translateY(-1px);
+}
+.rep-wrap .rep-btn-excel {
+    background: #e8f7ee;
+    color: #15803d;
+    border-color: rgba(21, 128, 61, 0.25);
+}
+.rep-wrap .rep-btn-excel:hover {
+    box-shadow: 0 4px 10px rgba(21, 128, 61, 0.18);
+}
+.rep-wrap .rep-btn-pdf {
+    background: #fdecec;
+    color: #b91c1c;
+    border-color: rgba(185, 28, 28, 0.25);
+}
+.rep-wrap .rep-btn-pdf:hover {
+    box-shadow: 0 4px 10px rgba(185, 28, 28, 0.18);
+}
+
+/* ── Alertas ──────────────────────────────────────────────────── */
+.rep-wrap .alert-banner {
+    background: #fff;
+    border-left: 5px solid var(--rep-danger);
+    border-radius: var(--rep-radius);
+    padding: 1.25rem;
+    margin-bottom: 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    box-shadow: var(--rep-shadow);
+}
+
+.rep-wrap .alert-banner-left { display: flex; gap: 1rem; }
+.rep-wrap .alert-banner-icon { color: var(--rep-danger); font-size: 1.25rem; }
+.rep-wrap .alert-banner-title { font-weight: 700; font-size: 1rem; margin-bottom: 4px; }
+.rep-wrap .alert-banner-sub { color: var(--rep-text-muted); font-size: 0.9rem; margin-bottom: 12px; }
+
+.rep-wrap .alert-tags { display: flex; flex-wrap: wrap; gap: 8px; }
+.rep-wrap .alert-tag {
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+.rep-wrap .alert-tag-low { background: #fef9c3; color: #854d0e; }
+.rep-wrap .alert-tag-out { background: #fee2e2; color: #991b1b; }
+
+/* ── KPI Grid ─────────────────────────────────────────────────── */
+.rep-wrap .kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2.5rem;
+}
+
+.rep-wrap .kpi-card {
+    background: var(--rep-bg-card);
+    padding: 1.5rem;
+    border-radius: var(--rep-radius);
+    box-shadow: var(--rep-shadow);
+    border: 1px solid var(--rep-border);
+}
+
+.rep-wrap .kpi-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 1rem;
+}
+
+.rep-wrap .ki-blue   { background: #dbeafe; color: var(--rep-primary); }
+.rep-wrap .ki-green  { background: #dcfce7; color: var(--rep-success); }
+.rep-wrap .ki-purple { background: #f3e8ff; color: var(--rep-purple); }
+.rep-wrap .ki-cyan   { background: #cffafe; color: var(--rep-cyan); }
+.rep-wrap .ki-yellow { background: #fef9c3; color: var(--rep-warning); }
+
+.rep-wrap .kpi-label { color: var(--rep-text-muted); font-size: 0.9rem; font-weight: 500; }
+.rep-wrap .kpi-value { font-size: 1.5rem; font-weight: 700; margin: 4px 0; }
+.rep-wrap .kpi-sub   { font-size: 0.8rem; color: var(--rep-text-muted); }
+
+/* ── Tabs ─────────────────────────────────────────────────────── */
+.rep-wrap .tabs-header {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 1.5rem;
+    background: #e2e8f0;
+    padding: 6px;
+    border-radius: 12px;
+    width: fit-content;
+}
+
+.rep-wrap .tab-btn {
+    border: none;
+    background: transparent;
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-weight: 600;
+    color: var(--rep-text-muted);
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.rep-wrap .tab-btn.active {
+    background: white;
+    color: var(--rep-primary);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.rep-wrap .tab-panel          { display: none; }
+.rep-wrap .tab-panel.active   { display: block; animation: rep-fadeIn 0.4s; }
+
+@keyframes rep-fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Gráficas ─────────────────────────────────────────────────── */
+.rep-wrap .chart-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.rep-wrap .chart-card {
+    background: white;
+    padding: 1.5rem;
+    border-radius: var(--rep-radius);
+    border: 1px solid var(--rep-border);
+    box-shadow: var(--rep-shadow);
+}
+
+.rep-wrap .chart-card-title {
+    font-weight: 700;
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* ── Tablas (scoped) ──────────────────────────────────────────── */
+.rep-wrap .table-wrap {
+    background: white;
+    border-radius: var(--rep-radius);
+    border: 1px solid var(--rep-border);
+    overflow: hidden;
+    box-shadow: var(--rep-shadow);
+}
+
+/* Nota: se usan clases específicas para no chocar con .table global de modulos.css */
+.rep-wrap table  { width: 100%; border-collapse: collapse; }
+.rep-wrap th     { background: #f8fafc; text-align: left; padding: 12px 16px; font-size: 0.85rem; color: var(--rep-text-muted); text-transform: uppercase; font-weight: 700; letter-spacing: 0.02em; }
+.rep-wrap td     { padding: 14px 16px; border-bottom: 1px solid #f1f5f9; font-size: 0.95rem; }
+.rep-wrap .price { font-weight: 700; color: var(--rep-text-main); }
+
+/* ── Badges (scoped, no interfieren con .badge global) ───────── */
+.rep-wrap .badge {
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-weight: 700;
+}
+.rep-wrap .badge-ok,
+.rep-wrap .badge-activo,
+.rep-wrap .badge-paid    { background: #dcfce7; color: #166534; }
+.rep-wrap .badge-low,
+.rep-wrap .badge-pend    { background: #fef9c3; color: #854d0e; }
+.rep-wrap .badge-out,
+.rep-wrap .badge-inactivo{ background: #fee2e2; color: #991b1b; }
+.rep-wrap .badge-venta   { background: #dbeafe; color: #1e40af; }
+.rep-wrap .badge-compra  { background: #f3e8ff; color: #6b21a8; }
+
+/* ── Stock bar ────────────────────────────────────────────────── */
+.rep-wrap .sbar       { display: flex; align-items: center; gap: 10px; }
+.rep-wrap .sbar-track { width: 80px; height: 6px; background: #e2e8f0; border-radius: 10px; overflow: hidden; }
+.rep-wrap .sbar-fill  { height: 100%; border-radius: 10px; }
+.rep-wrap .sf-ok      { background: var(--rep-success); }
+.rep-wrap .sf-low     { background: var(--rep-warning); }
+.rep-wrap .sf-out     { background: var(--rep-danger); }
+.rep-wrap .sbar-pct   { font-size: 0.75rem; font-weight: 600; color: var(--rep-text-muted); }
+
+/* ── Grid de mini-cards ───────────────────────────────────────── */
+.rep-wrap .todo-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.rep-wrap .mc      { background: white; border-radius: var(--rep-radius); padding: 1.25rem; border: 1px solid var(--rep-border); }
+.rep-wrap .mc-head { font-weight: 700; margin-bottom: 1rem; color: var(--rep-text-muted); font-size: 0.85rem; border-bottom: 1px solid #f1f5f9; padding-bottom: 8px; }
+.rep-wrap .mc-row  { display: flex; justify-content: space-between; padding: 6px 0; font-size: 0.85rem; }
+.rep-wrap .mc-name { color: var(--rep-text-main); }
+.rep-wrap .mc-val  { font-weight: 600; }
+.rep-wrap .mv-ok   { color: var(--rep-success); }
+.rep-wrap .mv-low  { color: var(--rep-warning); }
+.rep-wrap .mv-out  { color: var(--rep-danger); }

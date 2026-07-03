@@ -1,0 +1,60 @@
+services:
+  web:
+    build: .
+    container_name: proyecto3_app
+    command: python manage.py runserver 0.0.0.0:8000
+    volumes:
+      - .:/app
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    environment:
+      - DB_HOST=db
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - proyecto3_network
+
+  db:
+    image: mysql:8.0
+    container_name: proyecto3_mysql
+    environment:
+      MYSQL_DATABASE: ${DB_NAME}
+      MYSQL_USER: ${DB_USER}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+    volumes:
+      - proyecto3_mysql_data:/var/lib/mysql
+    ports:
+      - "3307:3306"
+    networks:
+      - proyecto3_network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: proyecto3_phpmyadmin
+    environment:
+      PMA_HOST: db
+      PMA_PORT: 3306
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+    ports:
+      - "8080:80"
+    networks:
+      - proyecto3_network
+    depends_on:
+      db:
+        condition: service_healthy
+
+networks:
+  proyecto3_network:
+    driver: bridge
+
+volumes:
+  proyecto3_mysql_data:

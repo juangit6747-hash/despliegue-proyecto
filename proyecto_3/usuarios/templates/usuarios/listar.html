@@ -1,0 +1,119 @@
+{% extends 'base.html' %}
+{% block page_header_title %}<i class="fa-solid fa-users-gear me-2"></i>Usuarios{% endblock %}
+
+{% load static %}
+
+{% block title %}Usuarios{% endblock %}
+
+{% block content %}
+
+<div class="page-header animate-slide-right">
+  <div class="page-header-left">
+    <div class="page-title">
+      <div class="page-title-icon"><i class="fa-solid fa-users-gear"></i></div>
+      Gestión de Usuarios
+    </div>
+    <div class="page-subtitle">Administra los accesos al sistema</div>
+  </div>
+  <a href="{% url 'usuarios:crear' %}" class="btn btn-primary">
+    <i class="fa-solid fa-user-plus"></i> Crear Administrador
+  </a>
+</div>
+
+<div class="glass-card animate-fade-up">
+  <div class="glass-card-header">
+    <div class="glass-card-title"><i class="fa-solid fa-list"></i> Administradores del Sistema</div>
+  </div>
+  <div class="tbl-wrap" style="border:none;border-radius:0;">
+    <table class="table" aria-label="Usuarios del sistema">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Foto</th>
+          <th>Usuario</th>
+          <th>Nombre Completo</th>
+          <th>Rol</th>
+          <th>Cédula</th>
+          <th>Estado</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for u in usuarios %}
+        <tr>
+          <td style="color:var(--tx-muted);font-size:.82rem;">{{ u.id }}</td>
+          <td>
+            {% if u.perfil.foto %}
+              <img src="{{ u.perfil.foto.url }}" alt="Foto"
+                   style="width:36px;height:36px;border-radius:50%;object-fit:cover;border:2px solid var(--bd-default);">
+            {% else %}
+              <img src="https://ui-avatars.com/api/?name={{ u.first_name|urlencode }}+{{ u.last_name|urlencode }}&background=c0392b&color=fff&size=36"
+                   alt="Avatar"
+                   style="width:36px;height:36px;border-radius:50%;object-fit:cover;">
+            {% endif %}
+          </td>
+          <td style="font-weight:600;">{{ u.username }}</td>
+          <td>
+            {% if u.first_name or u.last_name %}
+              {{ u.first_name }} {{ u.last_name }}
+            {% else %}
+              <span style="color:var(--tx-muted);">—</span>
+            {% endif %}
+          </td>
+          <td>
+            {% if u.perfil %}
+              {% if u.perfil.rol == 'superadmin' %}
+                <span class="badge badge-danger">
+                  <i class="fa-solid fa-crown"></i> {{ u.perfil.get_rol_display }}
+                </span>
+              {% else %}
+                <span class="badge badge-info">
+                  <i class="fa-solid fa-user-shield"></i> {{ u.perfil.get_rol_display }}
+                </span>
+              {% endif %}
+            {% else %}
+              <span style="color:var(--tx-muted);font-style:italic;font-size:.82rem;">Sin perfil</span>
+            {% endif %}
+          </td>
+          <td style="font-family:var(--font-mono);font-size:.85rem;">{{ u.perfil.cedula|default:"N/A" }}</td>
+          <td>
+            {% if u.is_active %}
+              <span class="badge badge-success"><i class="fa-solid fa-circle" style="font-size:.45rem;vertical-align:middle;"></i> Activo</span>
+            {% else %}
+              <span class="badge badge-danger"><i class="fa-solid fa-circle" style="font-size:.45rem;vertical-align:middle;"></i> Inactivo</span>
+            {% endif %}
+          </td>
+          <td>
+            <div class="tbl-actions">
+              <a href="{% url 'usuarios:editar' u.id %}" class="btn btn-sm btn-warning btn-icon-sq" title="Editar">
+                <i class="fa-solid fa-pen"></i>
+              </a>
+              <form method="post" action="{% url 'usuarios:cambiar_estado' u.id %}" style="display:inline;">
+                {% csrf_token %}
+                {% if u.is_active %}
+                  <button type="submit" class="btn btn-sm btn-danger btn-icon-sq" title="Desactivar">
+                    <i class="fa-solid fa-user-slash"></i>
+                  </button>
+                {% else %}
+                  <button type="submit" class="btn btn-sm btn-success btn-icon-sq" title="Activar">
+                    <i class="fa-solid fa-user-check"></i>
+                  </button>
+                {% endif %}
+              </form>
+            </div>
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="8" style="text-align:center;padding:48px;color:var(--tx-muted);">
+            <i class="fa-solid fa-users" style="font-size:2rem;display:block;margin-bottom:10px;opacity:.3;"></i>
+            No hay administradores registrados.
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+{% endblock %}

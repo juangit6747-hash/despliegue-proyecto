@@ -1,0 +1,215 @@
+{% extends 'base.html' %}
+{% load static humanize %}
+
+{% block title %}Inicio{% endblock %}
+
+{% block content %}
+
+<!-- Page header -->
+<div class="page-header animate-slide-right">
+  <div class="page-header-left">
+    <div class="page-title">
+      <div class="page-title-icon"><i class="fa-solid fa-gauge-high"></i></div>
+      Inicio
+    </div>
+    <div class="page-subtitle">Bienvenido, {{ request.user.get_full_name|default:request.user.username }} — resumen general del sistema</div>
+  </div>
+  <div style="display:flex;gap:10px;align-items:center;">
+    <span style="font-size:.78rem;padding:6px 14px;background:var(--c-red-l);color:var(--c-red);border-radius:var(--r-full);border:1px solid rgba(192,57,43,0.25);font-weight:600;">
+      <i class="fa-solid fa-circle" style="font-size:.5rem;vertical-align:middle;animation:pulse-soft 2s ease infinite;"></i>
+      Sistema activo
+    </span>
+  </div>
+</div>
+
+<!-- Stats row -->
+<div class="row g-4 mb-4 animate-stagger">
+
+  <div class="col-6 col-md-4 col-xl-2 animate-item">
+    <div class="stat-card" style="--stat-color:var(--c-red);--stat-color-l:var(--c-red-l);">
+      <div class="stat-card-glow"></div>
+      <div class="stat-icon"><i class="fa-solid fa-box"></i></div>
+      <div class="stat-label">Productos</div>
+      <div class="stat-value">{{ total_productos|default:"0" }}</div>
+      <div class="stat-sub"><i class="fa-solid fa-layer-group"></i> en catálogo</div>
+    </div>
+  </div>
+
+  <div class="col-6 col-md-4 col-xl-2 animate-item">
+    <div class="stat-card" style="--stat-color:var(--c-success);--stat-color-l:var(--c-success-l);">
+      <div class="stat-card-glow"></div>
+      <div class="stat-icon"><i class="fa-solid fa-users"></i></div>
+      <div class="stat-label">Clientes</div>
+      <div class="stat-value">{{ total_clientes|default:"0" }}</div>
+      <div class="stat-sub"><i class="fa-solid fa-user-check"></i> registrados</div>
+    </div>
+  </div>
+
+  <div class="col-6 col-md-4 col-xl-2 animate-item">
+    <div class="stat-card" style="--stat-color:var(--c-gold);--stat-color-l:var(--c-gold-l);">
+      <div class="stat-card-glow"></div>
+      <div class="stat-icon"><i class="fa-solid fa-cart-shopping"></i></div>
+      <div class="stat-label">Ventas</div>
+      <div class="stat-value">{{ total_ventas|default:"0" }}</div>
+      <div class="stat-sub"><i class="fa-solid fa-receipt"></i> realizadas</div>
+    </div>
+  </div>
+
+  <div class="col-6 col-md-4 col-xl-2 animate-item">
+    <div class="stat-card" style="--stat-color:var(--c-info);--stat-color-l:var(--c-info-l);">
+      <div class="stat-card-glow"></div>
+      <div class="stat-icon"><i class="fa-solid fa-truck"></i></div>
+      <div class="stat-label">Proveedores</div>
+      <div class="stat-value">{{ total_proveedores|default:"0" }}</div>
+      <div class="stat-sub"><i class="fa-solid fa-handshake"></i> activos</div>
+    </div>
+  </div>
+
+  <div class="col-6 col-md-4 col-xl-2 animate-item">
+    <div class="stat-card" style="--stat-color:var(--c-danger);--stat-color-l:var(--c-danger-l);">
+      <div class="stat-card-glow"></div>
+      <div class="stat-icon"><i class="fa-solid fa-bag-shopping"></i></div>
+      <div class="stat-label">Compras</div>
+      <div class="stat-value">{{ total_compras|default:"0" }}</div>
+      <div class="stat-sub"><i class="fa-solid fa-file-invoice"></i> registradas</div>
+    </div>
+  </div>
+
+  <div class="col-6 col-md-4 col-xl-2 animate-item">
+    <div class="stat-card" style="--stat-color:var(--c-purple);--stat-color-l:rgba(142,68,173,0.13);">
+      <div class="stat-card-glow"></div>
+      <div class="stat-icon"><i class="fa-solid fa-chart-line"></i></div>
+      <div class="stat-label">Reportes</div>
+      <div class="stat-value">{{ total_reportes|default:"0" }}</div>
+      <div class="stat-sub"><i class="fa-solid fa-chart-bar"></i> generados</div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Acceso rápido grid -->
+<div class="page-header" style="margin-bottom:var(--sp-md);">
+  <div class="page-title" style="font-size:1rem;">
+    <i class="fa-solid fa-bolt" style="color:var(--c-gold);"></i> Acceso rápido
+  </div>
+</div>
+
+<div class="row g-3 mb-4 animate-stagger">
+
+  <!-- Productos -->
+  <div class="col-12 col-sm-6 col-lg-4 animate-item">
+    <a href="{% url 'productos' %}" class="glass-card d-block text-decoration-none" style="padding:22px;">
+      <div style="display:flex;align-items:center;gap:14px;margin-bottom:14px;">
+        <div style="width:44px;height:44px;border-radius:var(--r-sm);background:var(--c-red-l);border:1px solid rgba(192,57,43,0.2);display:flex;align-items:center;justify-content:center;font-size:1.1rem;color:var(--c-red);">
+          <i class="fa-solid fa-boxes-stacked"></i>
+        </div>
+        <div>
+          <div style="font-family:var(--font-display);font-weight:700;font-size:.95rem;color:var(--tx-primary);">Productos</div>
+          <div style="font-size:.76rem;color:var(--tx-muted);">Catálogo y stock</div>
+        </div>
+      </div>
+      <div style="font-size:.83rem;color:var(--tx-secondary);line-height:1.5;">Administra el catálogo completo de productos, marcas, tipos y unidades.</div>
+      <div style="margin-top:14px;font-size:.78rem;font-weight:600;color:var(--c-red);display:flex;align-items:center;gap:5px;">
+        Abrir <i class="fa-solid fa-arrow-right"></i>
+      </div>
+    </a>
+  </div>
+
+  <!-- Clientes -->
+  <div class="col-12 col-sm-6 col-lg-4 animate-item">
+    <a href="{% url 'clientes' %}" class="glass-card d-block text-decoration-none" style="padding:22px;">
+      <div style="display:flex;align-items:center;gap:14px;margin-bottom:14px;">
+        <div style="width:44px;height:44px;border-radius:var(--r-sm);background:var(--c-success-l);border:1px solid rgba(39,174,96,0.2);display:flex;align-items:center;justify-content:center;font-size:1.1rem;color:var(--c-success);">
+          <i class="fa-solid fa-users"></i>
+        </div>
+        <div>
+          <div style="font-family:var(--font-display);font-weight:700;font-size:.95rem;color:var(--tx-primary);">Clientes</div>
+          <div style="font-size:.76rem;color:var(--tx-muted);">Base de clientes</div>
+        </div>
+      </div>
+      <div style="font-size:.83rem;color:var(--tx-secondary);line-height:1.5;">Gestiona la información de tus clientes y consulta su historial.</div>
+      <div style="margin-top:14px;font-size:.78rem;font-weight:600;color:var(--c-success);display:flex;align-items:center;gap:5px;">
+        Abrir <i class="fa-solid fa-arrow-right"></i>
+      </div>
+    </a>
+  </div>
+
+  <!-- Ventas -->
+  <div class="col-12 col-sm-6 col-lg-4 animate-item">
+    <a href="{% url 'ventas' %}" class="glass-card d-block text-decoration-none" style="padding:22px;">
+      <div style="display:flex;align-items:center;gap:14px;margin-bottom:14px;">
+        <div style="width:44px;height:44px;border-radius:var(--r-sm);background:var(--c-gold-l);border:1px solid rgba(232,168,56,0.2);display:flex;align-items:center;justify-content:center;font-size:1.1rem;color:var(--c-gold);">
+          <i class="fa-solid fa-cart-shopping"></i>
+        </div>
+        <div>
+          <div style="font-family:var(--font-display);font-weight:700;font-size:.95rem;color:var(--tx-primary);">Ventas</div>
+          <div style="font-size:.76rem;color:var(--tx-muted);">Registro y consulta</div>
+        </div>
+      </div>
+      <div style="font-size:.83rem;color:var(--tx-secondary);line-height:1.5;">Registra nuevas ventas y consulta el historial con estadísticas.</div>
+      <div style="margin-top:14px;font-size:.78rem;font-weight:600;color:var(--c-gold);display:flex;align-items:center;gap:5px;">
+        Abrir <i class="fa-solid fa-arrow-right"></i>
+      </div>
+    </a>
+  </div>
+
+  <!-- Proveedores -->
+  <div class="col-12 col-sm-6 col-lg-4 animate-item">
+    <a href="{% url 'proveedores' %}" class="glass-card d-block text-decoration-none" style="padding:22px;">
+      <div style="display:flex;align-items:center;gap:14px;margin-bottom:14px;">
+        <div style="width:44px;height:44px;border-radius:var(--r-sm);background:var(--c-info-l);border:1px solid rgba(41,128,185,0.2);display:flex;align-items:center;justify-content:center;font-size:1.1rem;color:var(--c-info);">
+          <i class="fa-solid fa-truck"></i>
+        </div>
+        <div>
+          <div style="font-family:var(--font-display);font-weight:700;font-size:.95rem;color:var(--tx-primary);">Proveedores</div>
+          <div style="font-size:.76rem;color:var(--tx-muted);">Gestión de proveedores</div>
+        </div>
+      </div>
+      <div style="font-size:.83rem;color:var(--tx-secondary);line-height:1.5;">Administra la información de contacto y datos de tus proveedores.</div>
+      <div style="margin-top:14px;font-size:.78rem;font-weight:600;color:var(--c-info);display:flex;align-items:center;gap:5px;">
+        Abrir <i class="fa-solid fa-arrow-right"></i>
+      </div>
+    </a>
+  </div>
+
+  <!-- Compras -->
+  <div class="col-12 col-sm-6 col-lg-4 animate-item">
+    <a href="{% url 'compras' %}" class="glass-card d-block text-decoration-none" style="padding:22px;">
+      <div style="display:flex;align-items:center;gap:14px;margin-bottom:14px;">
+        <div style="width:44px;height:44px;border-radius:var(--r-sm);background:var(--c-danger-l);border:1px solid rgba(231,76,60,0.2);display:flex;align-items:center;justify-content:center;font-size:1.1rem;color:var(--c-danger);">
+          <i class="fa-solid fa-bag-shopping"></i>
+        </div>
+        <div>
+          <div style="font-family:var(--font-display);font-weight:700;font-size:.95rem;color:var(--tx-primary);">Compras</div>
+          <div style="font-size:.76rem;color:var(--tx-muted);">Reabastecimiento</div>
+        </div>
+      </div>
+      <div style="font-size:.83rem;color:var(--tx-secondary);line-height:1.5;">Registra compras a proveedores y controla el reabastecimiento.</div>
+      <div style="margin-top:14px;font-size:.78rem;font-weight:600;color:var(--c-danger);display:flex;align-items:center;gap:5px;">
+        Abrir <i class="fa-solid fa-arrow-right"></i>
+      </div>
+    </a>
+  </div>
+
+  <!-- Reportes -->
+  <div class="col-12 col-sm-6 col-lg-4 animate-item">
+    <a href="{% url 'reportes' %}" class="glass-card d-block text-decoration-none" style="padding:22px;">
+      <div style="display:flex;align-items:center;gap:14px;margin-bottom:14px;">
+        <div style="width:44px;height:44px;border-radius:var(--r-sm);background:rgba(142,68,173,0.13);border:1px solid rgba(142,68,173,0.2);display:flex;align-items:center;justify-content:center;font-size:1.1rem;color:var(--c-purple);">
+          <i class="fa-solid fa-chart-line"></i>
+        </div>
+        <div>
+          <div style="font-family:var(--font-display);font-weight:700;font-size:.95rem;color:var(--tx-primary);">Reportes</div>
+          <div style="font-size:.76rem;color:var(--tx-muted);">Estadísticas y análisis</div>
+        </div>
+      </div>
+      <div style="font-size:.83rem;color:var(--tx-secondary);line-height:1.5;">Consulta reportes, estadísticas de ventas y datos del sistema.</div>
+      <div style="margin-top:14px;font-size:.78rem;font-weight:600;color:var(--c-purple);display:flex;align-items:center;gap:5px;">
+        Abrir <i class="fa-solid fa-arrow-right"></i>
+      </div>
+    </a>
+  </div>
+
+</div>
+
+{% endblock %}

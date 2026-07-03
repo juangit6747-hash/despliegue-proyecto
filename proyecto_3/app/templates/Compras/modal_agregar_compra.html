@@ -1,0 +1,235 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="section-header">
+    <h1 class="section-title">
+        <i class="fa-solid fa-shopping-cart me-2"></i>Gestión de Compras
+    </h1>
+    <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#modalCrearCompra">
+        <i class="fa-solid fa-plus me-2"></i>Agregar Compra
+    </button>
+</div>
+
+
+<!-- Buscador y filtros -->
+<div class="filter-bar">
+    <form method="GET" class="d-flex gap-3 w-100">
+        <div class="search-box">
+            <input type="text" name="busqueda" class="form-control"
+                   placeholder="Buscar por proveedor o producto..."
+                   value="{{ request.GET.busqueda }}">
+        </div>
+        <select name="estado" class="form-select" style="width: auto;">
+            <option value="">Filtrar por estado</option>
+            <option value="Completada" {% if request.GET.estado == "Completada" %}selected{% endif %}>Completada</option>
+            <option value="Pendiente" {% if request.GET.estado == "Pendiente" %}selected{% endif %}>Pendiente</option>
+        </select>
+        <button type="submit" class="btn btn-primary">
+            <i class="fa-solid fa-filter me-2"></i>Filtrar
+        </button>
+        {% if request.GET.busqueda or request.GET.estado %}
+        <a href="{% url 'compras' %}" class="btn btn-secondary">
+            <i class="fa-solid fa-times me-2"></i>Limpiar
+        </a>
+        {% endif %}
+    </form>
+</div>
+
+<!-- Tabla de compras -->
+<div class="table-container">
+    <table class="table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Proveedor</th>
+                <th>Producto</th>
+                <th>Administrador</th>
+                <th>Fecha</th>
+                <th>Estado</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for compra in compras %}
+            <tr>
+                <td>{{ compra.idCompra }}</td>
+                <td>{{ compra.Proveedor.nombre }}</td>
+                <td>{{ compra.Producto.nombre }}</td>
+                <td>
+                    {% if compra.usuario %}
+                        {{ compra.usuario.get_full_name|default:compra.usuario.username }}
+                    {% else %}
+                        -
+                    {% endif %}
+                </td>
+                <td>{{ compra.fechaCompra|date:"d/m/Y" }}</td>
+                <td>
+                    {% if compra.estado == True %}
+                        <span class="badge badge-success">Completada</span>
+                    {% else %}
+                        <span class="badge badge-warning">{{ compra.estado|default:"Pendiente" }}</span>
+                    {% endif %}
+                </td>
+                <td>
+                    <div class="btn-group">
+                        <button class="btn btn-sm btn-warning"
+                                data-bs-toggle="modal"
+                                data-bs-target="#modalEditarCompra{{ compra.idCompra }}">
+                            <i class="fa-solid fa-edit"></i>
+                        </button>
+                        <button class="btn btn-sm btn-danger"
+                                data-bs-toggle="modal"
+                                data-bs-target="#modalEliminarCompra{{ compra.idCompra }}">
+                            <i class="fa-solid fa-trash"></i>
+                        </button>
+                    </div>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="7" class="text-center py-4">No hay compras registradas</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- Modal: Crear Compra -->
+<div class="modal fade" id="modalCrearCompra" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="fa-solid fa-plus me-1"></i> Nueva Compra</h5>
+                <button type="button" class="btn-close btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="post" action="{% url 'crear_compra' %}">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Fecha <span class="text-danger">*</span></label>
+                        <input type="date" name="fecha" class="form-control"
+                               min="{{ fecha_min }}" max="{{ fecha_max }}" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Estado</label>
+                        <select name="estado" class="form-select">
+                            <option value="Pendiente">Pendiente</option>
+                            <option value="Completada">Completada</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Producto <span class="text-danger">*</span></label>
+                        <select name="producto_id" class="form-select" required>
+                            <option value="">Seleccione un producto</option>
+                            {% for producto in productos %}
+                                <option value="{{ producto.idProducto }}">{{ producto.nombre }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Proveedor <span class="text-danger">*</span></label>
+                        <select name="proveedor_id" class="form-select" required>
+                            <option value="">Seleccione un proveedor</option>
+                            {% for proveedor in proveedores %}
+                                <option value="{{ proveedor.id }}">{{ proveedor.nombre }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-success">
+                        <i class="fa-solid fa-save me-1"></i> Guardar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modales Editar y Eliminar por compra -->
+{% for compra in compras %}
+<div class="modal fade" id="modalEditarCompra{{ compra.id }}" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="fa-solid fa-edit me-1"></i> Editar Compra</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="post" action="{% url 'editar_compra' compra.idCompra %}">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Fecha <span class="text-danger">*</span></label>
+                        <input type="date" name="fecha" class="form-control"
+                               value="{{ compra.fecha|date:'Y-m-d' }}"
+                               min="{{ fecha_min }}" max="{{ fecha_max }}" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Estado</label>
+                        <select name="estado" class="form-select">
+                            <option value="Pendiente" {% if compra.estado == 'Pendiente' %}selected{% endif %}>Pendiente</option>
+                            <option value="Completada" {% if compra.estado == 'Completada' %}selected{% endif %}>Completada</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Producto <span class="text-danger">*</span></label>
+                        <select name="producto_id" class="form-select" required>
+                            {% for producto in productos %}
+                                <option value="{{ producto.idProducto }}"
+                                    {% if compra.Producto.idProducto == producto.idProducto %}selected{% endif %}>
+                                    {{ producto.nombre }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Proveedor <span class="text-danger">*</span></label>
+                        <select name="proveedor_id" class="form-select" required>
+                            {% for proveedor in proveedores %}
+                                <option value="{{ proveedor.id }}"
+                                    {% if compra.Proveedor.id == proveedor.id %}selected{% endif %}>
+                                    {{ proveedor.nombre }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-warning">
+                        <i class="fa-solid fa-save me-1"></i> Actualizar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="modalEliminarCompra{{ compra.idCompra }}" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="fa-solid fa-trash me-1"></i> Eliminar Compra</h5>
+                <button type="button" class="btn-close btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="post" action="{% url 'eliminar_compra' compra.idCompra %}">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <p>¿Está seguro de eliminar la compra <strong>#{{ compra.idCompra }}</strong>?</p>
+                    <p class="text-danger"><i class="fa-solid fa-warning me-2"></i>Esta acción no se puede deshacer.</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-danger">
+                        <i class="fa-solid fa-trash me-1"></i> Sí, eliminar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endfor %}
+
+{% endblock %}

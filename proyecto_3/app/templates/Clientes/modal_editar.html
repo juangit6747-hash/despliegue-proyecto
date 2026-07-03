@@ -1,0 +1,62 @@
+<div class="modal fade" id="modalEditarCliente{{ cliente.id }}" tabindex="-1" aria-modal="true" role="dialog">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title"><i class="fa-solid fa-pen"></i> Editar Cliente</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <form method="POST" action="{% url 'editar_cliente' cliente.id %}">
+        {% csrf_token %}
+        <div class="modal-body">
+          <div class="mb-3">
+            <label class="form-label">Nombre Completo <span style="color:var(--c-danger);">*</span></label>
+            <input type="text" name="nombre" class="form-control"
+                   value="{{ cliente.nombre }}"
+                   required minlength="3" maxlength="100"
+                   pattern="[a-zA-ZáéíóúÁÉÍÓÚüÜñÑ\s]+">
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Documento <span style="color:var(--c-danger);">*</span></label>
+            <input type="text" name="documento" class="form-control"
+                   value="{{ cliente.documento }}"
+                   required minlength="6" maxlength="12"
+                   oninput="this.value=this.value.replace(/[^\d]/g,'')">
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Teléfono <span style="color:var(--c-danger);">*</span></label>
+            <input type="text" name="telefono" class="form-control"
+                   value="{{ cliente.telefono }}"
+                   required minlength="7" maxlength="10"
+                   oninput="this.value=this.value.replace(/[^\d]/g,'')">
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Email <span style="color:var(--c-danger);">*</span></label>
+            <input type="text" name="email" class="form-control"
+                   value="{{ cliente.email }}"
+                   required maxlength="100"
+                   pattern="[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}">
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Dirección <span style="color:var(--c-danger);">*</span></label>
+            <input type="text" name="direccion" class="form-control"
+                   value="{{ cliente.direccion }}"
+                   required minlength="5" maxlength="200">
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Estado <span style="color:var(--c-danger);">*</span></label>
+            <select name="estado" class="form-select" required>
+              <option value="activo" {% if cliente.estado == 'activo' %}selected{% endif %}>Activo</option>
+              <option value="inactivo" {% if cliente.estado == 'inactivo' %}selected{% endif %}>Inactivo</option>
+            </select>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="submit" class="btn btn-warning">
+            <i class="fa-solid fa-floppy-disk"></i> Actualizar Cliente
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

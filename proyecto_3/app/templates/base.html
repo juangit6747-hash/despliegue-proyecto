@@ -1,0 +1,1153 @@
+
+
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Inventario - Grupo 3</title>
+    <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">
+    <link rel="stylesheet" href="{% static 'css/all.min.css' %}">
+    <link rel="stylesheet" href="{% static 'css/tokens.css' %}">
+    <link rel="stylesheet" href="{% static 'css/estilos_pagina.css' %}">
+    <link rel="stylesheet" href="{% static 'css/filtros_realtime.css' %}">
+    <link rel="stylesheet" href="{% static 'css/modulos.css' %}">
+    <link rel="stylesheet" href="{% static 'css/breadcrumb.css' %}">
+    <link rel="stylesheet" href="{% static 'css/chat_ia.css' %}">
+    <link rel="stylesheet" href="{% static 'css/accesibilidad.css' %}">
+    <link rel="stylesheet" href="{% static 'css/animaciones.css' %}">
+    <script src="{% static 'js/sweetalert2.min.js' %}"></script>
+    <style>
+        #sidebar {
+            width: 250px;
+            min-height: 100vh;
+            transition: width 0.3s ease;
+            overflow: hidden;
+        }
+        #sidebar.collapsed {
+            width: 60px;
+        }
+        #sidebar .link-text {
+            transition: opacity 0.3s ease;
+            white-space: nowrap;
+        }
+        #sidebar.collapsed .link-text {
+            opacity: 0;
+            width: 0;
+            overflow: hidden;
+        }
+        #sidebar.collapsed h4,
+        #sidebar.collapsed .sidebar-title {
+            display: none;
+        }
+        #sidebar a {
+            padding: 10px 8px;
+            border-radius: 6px;
+            transition: background 0.2s;
+        }
+        #sidebar a:hover, #sidebar .productos-toggle:hover {
+            background-color: rgba(255,255,255,0.1);
+        }
+        .sub-link:hover {
+            background-color: rgba(255,255,255,0.08) !important;
+        }
+        .sub-link.active,
+        #sidebar a.active {
+            position: relative;
+            color: #dbeafe !important;
+        }
+        .sub-link.active::after,
+        #sidebar a.active::after {
+            content: '';
+            position: absolute;
+            left: 8px;
+            right: 8px;
+            bottom: 6px;
+            height: 3px;
+            background: rgba(96, 165, 250, 0.25);
+            border-radius: 999px;
+            pointer-events: none;
+        }
+        #sidebar a i {
+            min-width: 24px;
+            text-align: center;
+        }
+        #toggle-btn {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.2rem;
+            cursor: pointer;
+            padding: 4px 8px;
+            border-radius: 4px;
+        }
+        #toggle-btn:hover {
+            background-color: rgba(255,255,255,0.1);
+        }
+        #main-content {
+            transition: margin-left 0.3s ease;
+            flex: 1;
+        }
+
+        .visually-hidden {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border: 0;
+        }
+
+        /* ── Botón flotante IA ── */
+        #chat-btn {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: #f59e0b; /* Dorado */
+            color: #1a1a1a;
+            border: none;
+            font-size: 24px;
+            cursor: move; /* Indicar arrastrable */
+            box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.2s;
+        }
+        #chat-btn:hover { transform: scale(1.05); }
+
+        /* ── Ventana del chat ── */
+        #chat-window {
+            position: fixed;
+            bottom: 100px;
+            right: 30px;
+            width: 370px;
+            height: 500px;
+            background: #1b1d1b;
+            border-radius: 16px;
+            box-shadow: 0 12px 40px rgba(0,0,0,0.5);
+            display: none;
+            flex-direction: column;
+            z-index: 9998;
+            overflow: hidden;
+            border: 1px solid #404040;
+        }
+        #chat-window.open { display: flex; }
+
+        #chat-header {
+            background: linear-gradient(145deg, #7f1d1d, #9b1c1c);
+            color: white;
+            padding: 14px 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 600;
+        }
+        #chat-header button {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 18px;
+            cursor: pointer;
+        }
+
+        #chat-box {
+            flex: 1;
+            overflow-y: auto;
+            padding: 14px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            background: #2a2a2a;
+        }
+
+        #chat-input-area {
+            display: flex;
+            border-top: 1px solid #404040;
+            background: #1b1d1b;
+        }
+        #chat-input-area input {
+            flex: 1;
+            border: none;
+            padding: 12px;
+            outline: none;
+            font-size: 14px;
+            background: #1b1d1b;
+            color: white;
+        }
+        #chat-input-area input::placeholder {
+            color: #a3a3a3;
+        }
+        #chat-input-area button {
+            background: #9b1c1c;
+            color: white;
+            border: none;
+            padding: 12px 16px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+        }
+        #chat-input-area button:hover { background: #0b5ed7; }
+        /* ── Botón flotante Accesibilidad ── */
+#accessibility-btn {
+    position: fixed !important;
+    bottom: 100px;
+    right: 30px;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: #1d4ed8;
+    color: white;
+    border: none;
+    font-size: 22px;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+    z-index: 11001;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.2s;
+}
+#accessibility-btn:hover { transform: scale(1.05); }
+
+/* ── Panel de Accesibilidad ── */
+#accessibility-panel {
+    position: fixed !important;
+    bottom: 170px;
+    right: 30px;
+    width: 280px;
+    background: #1b1d1b;
+    border: 1px solid #404040;
+    border-radius: 16px;
+    box-shadow: 0 12px 40px rgba(0,0,0,0.5);
+    display: none;
+    flex-direction: column;
+    z-index: 11000;
+    overflow: hidden;
+}
+#accessibility-panel.open { display: flex; }
+
+#accessibility-panel-header {
+    background: linear-gradient(145deg, #1e3a8a, #1d4ed8);
+    color: white;
+    padding: 14px 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-weight: 600;
+    font-size: 14px;
+}
+#accessibility-panel-header button {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 18px;
+    cursor: pointer;
+}
+#accessibility-panel-body {
+    padding: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    background: #2a2a2a;
+}
+.acc-option-btn {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: #3c3b38;
+    color: white;
+    border: 1px solid #525252;
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-size: 13px;
+    cursor: pointer;
+    text-align: left;
+    transition: background 0.2s;
+}
+.acc-option-btn:hover { background: #525252; }
+.acc-option-btn.active { background: #1d4ed8; border-color: #3b82f6; }
+.acc-option-btn i { min-width: 18px; text-align: center; font-size: 15px; }
+#acc-font-size-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    justify-content: space-between;
+}
+#acc-font-size-row span {
+    color: #a3a3a3;
+    font-size: 13px;
+    flex: 1;
+}
+#acc-font-size-row button {
+    background: #3c3b38;
+    color: white;
+    border: 1px solid #525252;
+    border-radius: 6px;
+    width: 32px;
+    height: 32px;
+    font-size: 16px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s;
+}
+#acc-font-size-row button:hover { background: #525252; }
+#acc-reset-btn {
+    background: none;
+    color: #f87171;
+    border: 1px solid #f87171;
+    border-radius: 8px;
+    padding: 8px;
+    font-size: 12px;
+    cursor: pointer;
+    transition: background 0.2s;
+    text-align: center;
+}
+#acc-reset-btn:hover { background: rgba(248,113,113,0.15); }
+
+/* ── Modos de accesibilidad aplicados al body ── */
+body.acc-alto-contraste {
+    filter: contrast(2) !important;
+}
+body.acc-escala-grises {
+    filter: grayscale(1) !important;
+}
+body.acc-subrayar-links a {
+    text-decoration: underline !important;
+    text-underline-offset: 3px;
+}
+body.acc-fuente-grande * {
+    font-size: calc(1em + 2px) !important;
+    line-height: 1.6 !important;
+}
+body.acc-reducir-movimiento * {
+    animation: none !important;
+    transition: none !important;
+}
+    </style>
+</head>
+<body>
+  <a href="#main-content-area" class="skip-link">Saltar al contenido principal</a>
+
+<!-- ══════════════════════════════════════════════════
+     SIDEBAR
+     ══════════════════════════════════════════════════ -->
+<aside id="sidebar">
+  <div class="sidebar-logo">
+    <span class="sidebar-logo-text">
+      <i class="fa-solid fa-shop me-2" style="color:var(--c-red);"></i>El Despecho
+    </span>
+    <button id="toggle-btn" class="sidebar-toggle" title="Colapsar menú">
+      <i class="fa-solid fa-bars"></i>
+    </button>
+  </div>
+
+  <nav class="sidebar-nav">
+
+    <div class="nav-section">
+      <div class="nav-section-label">Principal</div>
+      <a href="{% url 'inicio' %}" class="nav-link {% if request.resolver_match.url_name == 'inicio' %}active{% endif %}">
+        <span class="nav-icon"><i class="fa-solid fa-gauge-high"></i></span>
+        <span class="nav-label">Dashboard</span>
+      </a>
+    </div>
+
+    <div class="nav-divider"></div>
+
+    <div class="nav-section">
+      <div class="nav-section-label">Catálogo</div>
+
+      <button class="nav-link nav-parent w-100 text-start border-0 bg-transparent {% if request.resolver_match.url_name in 'productos,marcas,tipos,unidades' %}active open{% endif %}"
+              id="productos-toggle" onclick="toggleSubMenu(this)">
+        <span class="nav-icon"><i class="fa-solid fa-box"></i></span>
+        <span class="nav-label">Productos</span>
+        <i class="fa-solid fa-chevron-down nav-chevron"></i>
+      </button>
+      <div class="nav-submenu {% if request.resolver_match.url_name in 'productos,marcas,tipos,unidades' %}open{% endif %}" id="submenu-productos">
+        <a href="{% url 'productos' %}" class="nav-link {% if request.resolver_match.url_name == 'productos' %}active{% endif %}">
+          <span class="nav-icon"><i class="fa-solid fa-boxes-stacked"></i></span>
+          <span class="nav-label">Productos</span>
+        </a>
+        <a href="{% url 'marcas' %}" class="nav-link {% if request.resolver_match.url_name == 'marcas' %}active{% endif %}">
+          <span class="nav-icon"><i class="fa-solid fa-tag"></i></span>
+          <span class="nav-label">Marcas</span>
+        </a>
+        <a href="{% url 'unidades' %}" class="nav-link {% if request.resolver_match.url_name == 'unidades' %}active{% endif %}">
+          <span class="nav-icon"><i class="fa-solid fa-ruler"></i></span>
+          <span class="nav-label">Unidades</span>
+        </a>
+        <a href="{% url 'tipos' %}" class="nav-link {% if request.resolver_match.url_name == 'tipos' %}active{% endif %}">
+          <span class="nav-icon"><i class="fa-solid fa-layer-group"></i></span>
+          <span class="nav-label">Tipos</span>
+        </a>
+      </div>
+
+      <a href="{% url 'proveedores' %}" class="nav-link {% if request.resolver_match.url_name == 'proveedores' %}active{% endif %}">
+        <span class="nav-icon"><i class="fa-solid fa-truck"></i></span>
+        <span class="nav-label">Proveedores</span>
+      </a>
+    </div>
+
+    <div class="nav-divider"></div>
+
+    <div class="nav-section">
+      <div class="nav-section-label">Operaciones</div>
+      <a href="{% url 'clientes' %}" class="nav-link {% if request.resolver_match.url_name == 'clientes' %}active{% endif %}">
+        <span class="nav-icon"><i class="fa-solid fa-users"></i></span>
+        <span class="nav-label">Clientes</span>
+      </a>
+      <a href="{% url 'ventas' %}" class="nav-link {% if request.resolver_match.url_name == 'ventas' %}active{% endif %}">
+        <span class="nav-icon"><i class="fa-solid fa-cart-shopping"></i></span>
+        <span class="nav-label">Ventas</span>
+      </a>
+      <a href="{% url 'compras' %}" class="nav-link {% if request.resolver_match.url_name == 'compras' %}active{% endif %}">
+        <span class="nav-icon"><i class="fa-solid fa-bag-shopping"></i></span>
+        <span class="nav-label">Compras</span>
+      </a>
+    </div>
+
+    <div class="nav-divider"></div>
+
+    <div class="nav-section">
+      <div class="nav-section-label">Sistema</div>
+      <a href="{% url 'reportes' %}" class="nav-link {% if request.resolver_match.url_name == 'reportes' %}active{% endif %}">
+        <span class="nav-icon"><i class="fa-solid fa-chart-line"></i></span>
+        <span class="nav-label">Reportes</span>
+      </a>
+      <a href="{% url 'backup' %}" class="nav-link {% if request.resolver_match.url_name == 'backup' %}active{% endif %}">
+        <span class="nav-icon"><i class="fa-solid fa-database"></i></span>
+        <span class="nav-label">Respaldo BD</span>
+      </a>
+      {% if request.user.is_superuser %}
+      <a href="{% url 'usuarios:listar' %}" class="nav-link {% if request.resolver_match.url_name == 'usuarios:listar' %}active{% endif %}">
+        <span class="nav-icon"><i class="fa-solid fa-users-gear"></i></span>
+        <span class="nav-label">Usuarios</span>
+      </a>
+      {% endif %}
+    </div>
+
+  </nav>
+
+  <div class="sidebar-footer">
+    <div class="sidebar-version">v2.0 — Grupo 3</div>
+  </div>
+</aside>
+
+<!-- ══════════════════════════════════════════════════
+     TOPBAR
+     ══════════════════════════════════════════════════ -->
+<header class="topbar">
+  <div class="topbar-brand">
+    {% block page_header_title %}
+      <i class="fa-solid fa-shop"></i> Inventario
+    {% endblock %}
+  </div>
+
+  <div class="topbar-right">
+    {% if request.user.is_authenticated %}
+
+      <div class="dropdown">
+        <button class="btn-notif" type="button" id="dropdownNotif"
+                data-bs-toggle="dropdown" aria-expanded="false" title="Notificaciones">
+          <i class="fa-solid fa-bell"></i>
+          {% if notif_total > 0 %}
+          <span class="notif-badge">{{ notif_total }}</span>
+          {% endif %}
+        </button>
+        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownNotif" style="min-width:310px; max-height:400px; overflow-y:auto;">
+          <li><h6 class="dropdown-header"><i class="fa-solid fa-bell me-1"></i> Notificaciones</h6></li>
+          {% if notif_total > 0 %}
+          <li class="px-3 py-1 d-flex justify-content-between align-items-center">
+            <span style="font-size:.76rem;color:var(--tx-muted);">{{ notif_total }} pendiente{{ notif_total|pluralize:"s" }}</span>
+            <button type="button" class="btn btn-sm btn-secondary" id="clear-notifications" style="padding:3px 10px;font-size:.74rem;">Limpiar</button>
+          </li>
+          <li><hr class="dropdown-divider my-1"></li>
+          {% endif %}
+          {% for notif in notificaciones %}
+          <li>
+            <div class="dropdown-item d-flex justify-content-between align-items-center gap-2">
+              <a href="{{ notif.url }}" class="text-decoration-none flex-grow-1" style="white-space:normal;font-size:.83rem;color:var(--tx-primary);">
+                <span class="me-1">{{ notif.icono }}</span>{{ notif.mensaje }}
+              </a>
+              <div class="d-flex gap-1 flex-shrink-0">
+                <button class="btn btn-sm btn-icon-sq btn-secondary btn-read-notif" data-id="{{ notif.notif_id }}" title="Leída">
+                  <i class="fa-solid fa-check"></i>
+                </button>
+                <button class="btn btn-sm btn-icon-sq btn-danger btn-delete-notif" data-id="{{ notif.notif_id }}" title="Eliminar">
+                  <i class="fa-solid fa-trash"></i>
+                </button>
+              </div>
+            </div>
+          </li>
+          {% empty %}
+          <li>
+            <span class="dropdown-item-text text-center py-3" style="font-size:.83rem;color:var(--tx-muted);">
+              <i class="fa-solid fa-circle-check me-1" style="color:var(--c-success);"></i>Sin notificaciones
+            </span>
+          </li>
+          {% endfor %}
+          <li><hr class="dropdown-divider my-1"></li>
+          <li>
+            <a href="{% url 'historial_notificaciones' %}" class="dropdown-item text-center" style="font-size:.8rem;color:var(--c-info);padding:8px;">
+              <i class="fa-solid fa-clock-rotate-left me-1"></i> Ver historial completo
+            </a>
+          </li>
+        </ul>
+      </div>
+
+      <div class="topbar-user">
+        <div class="avatar">{{ request.user.username|slice:":2"|upper }}</div>
+        <span>{{ request.user.get_full_name|default:request.user.username }}</span>
+        {% if request.user.is_superuser %}
+          <span style="font-size:.66rem;padding:2px 7px;background:var(--c-gold-l);color:var(--c-gold);border-radius:var(--r-full);border:1px solid rgba(232,168,56,0.3);">Admin</span>
+        {% endif %}
+      </div>
+
+      <a href="{% url 'logout' %}" class="btn-logout">
+        <i class="fa-solid fa-right-from-bracket"></i>
+        <span>Salir</span>
+      </a>
+
+    {% else %}
+      <a href="{% url 'login' %}" class="btn btn-primary btn-sm">
+        <i class="fa-solid fa-right-to-bracket"></i> Iniciar sesión
+      </a>
+    {% endif %}
+  </div>
+</header>
+
+<!-- ══════════════════════════════════════════════════
+     CONTENIDO PRINCIPAL
+     ══════════════════════════════════════════════════ -->
+<div id="main-content">
+  <main id="main-content-area" class="page-inner animate-fade-in" role="main" tabindex="-1">
+    {% block content %}{% endblock %}
+  </main>
+  <footer class="site-footer">
+    <div style="display:flex;flex-direction:column;align-items:center;gap:4px;">
+      <small>Tienda El Despecho &mdash; Sistema de Inventario Grupo 3 &copy; 2025–2026</small>
+      <small style="font-size:.68rem;color:var(--tx-muted);text-align:center;">
+        Iconos: <a href="https://fontawesome.com" target="_blank" rel="noopener" style="color:var(--tx-muted);text-decoration:none;">Font Awesome 6.5.1</a> (CC BY 4.0) &mdash;
+        UI: <a href="https://getbootstrap.com" target="_blank" rel="noopener" style="color:var(--tx-muted);text-decoration:none;">Bootstrap 5.3</a> (MIT) &mdash;
+        IA: <a href="https://groq.com" target="_blank" rel="noopener" style="color:var(--tx-muted);text-decoration:none;">Groq / Llama 3.1</a> &mdash;
+        Alertas: <a href="https://sweetalert2.github.io" target="_blank" rel="noopener" style="color:var(--tx-muted);text-decoration:none;">SweetAlert2</a> (MIT)
+      </small>
+    </div>
+  </footer>
+</div>
+
+{% if request.user.is_authenticated %}
+<button id="chat-btn" onclick="toggleChat()" title="Asistente IA" aria-label="Asistente inteligente" aria-controls="chat-window" aria-expanded="false">
+    <i class="fa-solid fa-robot"></i>
+
+<button id="chat-btn" onclick="toggleChat()" title="Asistente IA">
+  <i class="fa-solid fa-robot"></i>
+
+</button>
+
+<div id="chat-window" role="dialog" aria-label="Asistente IA" aria-modal="false">
+  <div id="chat-header">
+    <div id="chat-header-avatar"><i class="fa-solid fa-robot"></i></div>
+    <div id="chat-header-info">
+      <div id="chat-header-name">Asistente IA — El Despecho</div>
+    </div>
+    <div id="chat-header-actions">
+      <button onclick="limpiarChat()" title="Limpiar conversación" aria-label="Limpiar conversación">
+        <i class="fa-solid fa-trash-can"></i>
+      </button>
+      <button onclick="toggleChat()" title="Cerrar chat" aria-label="Cerrar chat">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+  </div>
+  <div id="chat-suggested" aria-label="Preguntas sugeridas">
+    <button class="chat-chip" onclick="sendChip(this)">📦 Ver productos</button>
+    <button class="chat-chip" onclick="sendChip(this)">⚠️ Stock bajo</button>
+    <button class="chat-chip" onclick="sendChip(this)">💰 Resumen ventas</button>
+    <button class="chat-chip" onclick="sendChip(this)">👥 Clientes</button>
+    <button class="chat-chip" onclick="sendChip(this)">🚚 Proveedores</button>
+  </div>
+  <div id="chat-box" role="log" aria-live="polite" aria-label="Conversación"></div>
+  <div id="chat-input-area">
+    <input type="text" id="user-input" placeholder="Escribe tu pregunta..."
+           aria-label="Escribe tu mensaje"
+           onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendMessage();}">
+    <button id="chat-send-btn" onclick="sendMessage()" title="Enviar mensaje" aria-label="Enviar">
+      <i class="fa-solid fa-paper-plane"></i>
+    </button>
+  </div>
+</div>
+{% endif %}
+
+<!-- ══════════════════════════════════════════════════
+     BOTÓN DE AYUDA
+     ══════════════════════════════════════════════════ -->
+<button id="help-btn" onclick="toggleHelp()" title="Ayuda — Manual del Administrador"
+        aria-label="Abrir manual de ayuda">
+  <i class="fa-solid fa-circle-question"></i>
+</button>
+
+<div id="help-overlay" role="dialog" aria-modal="true" aria-labelledby="help-title">
+  <div id="help-modal">
+    <div id="help-header">
+      <span id="help-title">
+        <i class="fa-solid fa-book-open me-2" style="color:var(--c-gold);"></i>
+        Manual del Administrador
+      </span>
+      <button onclick="toggleHelp()" title="Cerrar" aria-label="Cerrar ayuda" id="help-close-btn">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+    <div id="help-tabs" role="tablist">
+      <button class="help-tab active" role="tab" aria-selected="true" onclick="switchTab('manual', this)">
+        <i class="fa-solid fa-book me-1"></i> Manual
+      </button>
+      <button class="help-tab" role="tab" aria-selected="false" onclick="switchTab('creditos', this)">
+        <i class="fa-solid fa-award me-1"></i> Créditos
+      </button>
+    </div>
+    <div id="tab-manual" class="help-tab-content active" role="tabpanel">
+      <div class="help-body">
+        <p class="help-intro">
+          Sistema de Gestión de Inventario — <strong>Tienda El Despecho</strong>.
+          Consulta cada sección o descarga el manual completo en PDF.
+        </p>
+        <div class="help-section">
+          <div class="help-section-title"><i class="fa-solid fa-right-to-bracket"></i> 1. Acceso al Sistema</div>
+          <ul>
+            <li>Abrir el navegador y dirigirse a <code>http://localhost:8000</code>.</li>
+            <li>Ingresar usuario y contraseña y hacer clic en <strong>Iniciar sesión</strong>.</li>
+            <li>Para cerrar sesión usar el botón <strong>Salir</strong> en la barra superior.</li>
+            <li>Si olvidaste tu contraseña, usa el enlace <em>¿Olvidaste tu contraseña?</em>; recibirás un código al correo.</li>
+          </ul>
+        </div>
+        <div class="help-section">
+          <div class="help-section-title"><i class="fa-solid fa-gauge-high"></i> 2. Panel Principal (Dashboard)</div>
+          <ul>
+            <li><strong>Tarjetas de resumen:</strong> totales de productos, clientes, ventas, proveedores, compras y reportes.</li>
+            <li><strong>Gráficas:</strong> ventas e ingresos por mes, top 5 productos más vendidos, estado de clientes.</li>
+            <li><strong>Alertas de stock bajo:</strong> productos con 10 o menos unidades aparecen destacados.</li>
+            <li><strong>Asistente IA:</strong> botón flotante <i class="fa-solid fa-robot"></i> en la esquina inferior derecha.</li>
+          </ul>
+        </div>
+        <div class="help-section">
+          <div class="help-section-title"><i class="fa-solid fa-boxes-stacked"></i> 3. Módulo de Productos</div>
+          <ul>
+            <li><strong>Agregar:</strong> clic en <em>+ Agregar Producto</em>, completar nombre, precio, stock, marca, tipo y unidad.</li>
+            <li><strong>Editar:</strong> ícono de lápiz <i class="fa-solid fa-pen"></i> en la fila del producto.</li>
+            <li><strong>Eliminar:</strong> ícono de basura <i class="fa-solid fa-trash"></i> (pide confirmación).</li>
+            <li><strong>Código de barras:</strong> se puede registrar el código EAN al crear o editar el producto.</li>
+            <li>Desde este módulo también se gestionan <strong>Marcas</strong>, <strong>Tipos</strong> y <strong>Unidades de Medida</strong>.</li>
+          </ul>
+        </div>
+        <div class="help-section">
+          <div class="help-section-title"><i class="fa-solid fa-cart-shopping"></i> 4. Módulo de Ventas</div>
+          <ul>
+            <li><strong>Nueva venta manual:</strong> clic en <em>+ Nueva Venta</em>, buscar cliente, agregar productos y confirmar.</li>
+            <li><strong>Venta con escáner:</strong> clic en <em>Escanear venta</em> y apuntar la cámara al código de barras.</li>
+            <li><strong>Completar:</strong> una venta Pendiente se completa haciendo clic en <i class="fa-solid fa-check"></i>.</li>
+            <li><strong>Exportar:</strong> botones <em>PDF</em> y <em>Excel</em> en la parte superior de la tabla.</li>
+          </ul>
+        </div>
+        <div class="help-section">
+          <div class="help-section-title"><i class="fa-solid fa-bag-shopping"></i> 5. Módulo de Compras</div>
+          <ul>
+           <li>Registra compras a proveedores indicando producto, cantidad, precio unitario y proveedor.</li>
+            <li>El stock del producto se actualiza automáticamente al completar la compra.</li>
+          </ul>
+        </div>
+        <div class="help-section">
+          <div class="help-section-title"><i class="fa-solid fa-users"></i> 6. Clientes y Proveedores</div>
+          <ul>
+            <li>CRUD completo: crear, editar, eliminar y cambiar estado (activo/inactivo) para clientes.</li>
+            <li>En Proveedores se pueden <strong>asignar productos</strong> haciendo clic en el badge azul.</li>
+          </ul>
+        </div>
+        <div class="help-section">
+          <div class="help-section-title"><i class="fa-solid fa-barcode"></i> 7. Escáner de Códigos de Barras</div>
+          <ul>
+            <li><strong>Modo inventario:</strong> Catálogo → Productos → <em>Escanear</em>. Actualiza stock.</li>
+            <li><strong>Modo venta:</strong> Ventas → <em>Escanear venta</em>. Agrega al carrito.</li>
+            <li>También se puede cargar una <strong>imagen</strong> con el código de barras.</li>
+          </ul>
+        </div>
+        <div class="help-section">
+          <div class="help-section-title"><i class="fa-solid fa-chart-line"></i> 8. Reportes y Exportación</div>
+          <ul>
+            <li>Vista general en Sistema → Reportes con estadísticas globales.</li>
+            <li>Cada módulo tiene botones <em>Exportar PDF</em> y <em>Exportar Excel</em>.</li>
+          </ul>
+        </div>
+        <div class="help-section">
+          <div class="help-section-title"><i class="fa-solid fa-users-gear"></i> 9. Gestión de Usuarios</div>
+          <ul>
+            <li>Solo visible para el <strong>superadministrador</strong>.</li>
+            <li>Sistema → Usuarios → <em>Crear Administrador</em>.</li>
+          </ul>
+        </div>
+        <div class="help-section">
+          <div class="help-section-title"><i class="fa-solid fa-database"></i> 10. Respaldo y Restauración</div>
+          <ul>
+            <li>Sistema → Respaldo BD → <em>Descargar SQL</em> para generar una copia de seguridad.</li>
+            <li>Para restaurar, arrastra el archivo <code>.sql</code> al área de restauración.</li>
+            <li><strong>Advertencia:</strong> restaurar sobrescribe todos los datos actuales.</li>
+          </ul>
+        </div>
+        <div style="text-align:center; margin-top:16px;">
+          <a href="{% static 'manual_administrador.pdf' %}" target="_blank" class="help-download-btn"
+             aria-label="Descargar manual completo en PDF">
+            <i class="fa-solid fa-file-pdf me-2"></i> Descargar Manual Completo (PDF)
+          </a>
+        </div>
+      </div>
+    </div>
+    <div id="tab-creditos" class="help-tab-content" role="tabpanel">
+      <div class="help-body">
+        <p class="help-intro">Recursos audiovisuales y tecnologías utilizadas en este aplicativo.</p>
+        <div class="help-section">
+          <div class="help-section-title"><i class="fa-solid fa-icons"></i> Iconografía</div>
+          <table class="credits-table">
+            <tr><td><strong>Font Awesome 6</strong></td><td>Iconos de interfaz</td><td><a href="https://fontawesome.com" target="_blank" rel="noopener">fontawesome.com</a></td><td>2024</td></tr>
+          </table>
+        </div>
+        <div class="help-section">
+          <div class="help-section-title"><i class="fa-solid fa-image"></i> Imágenes</div>
+          <table class="credits-table">
+            <tr><td><strong>Logo</strong></td><td>Elaboración propia — Tienda El Despecho</td><td>Grupo 3 — ADSO</td><td>2025</td></tr>
+            <tr><td><strong>Imagen de fondo</strong></td><td>Elaboración propia</td><td>Grupo 3 — ADSO</td><td>2025</td></tr>
+          </table>
+        </div>
+        <div class="help-section">
+          <div class="help-section-title"><i class="fa-solid fa-layer-group"></i> Frameworks y Librerías</div>
+          <table class="credits-table">
+            <tr><td><strong>Bootstrap 5</strong></td><td>Framework CSS responsivo</td><td><a href="https://getbootstrap.com" target="_blank" rel="noopener">getbootstrap.com</a></td><td>2024</td></tr>
+            <tr><td><strong>SweetAlert2</strong></td><td>Alertas visuales</td><td><a href="https://sweetalert2.github.io" target="_blank" rel="noopener">sweetalert2.github.io</a></td><td>2024</td></tr>
+            <tr><td><strong>ZXing Library</strong></td><td>Lectura de códigos de barras</td><td><a href="https://github.com/zxing/zxing" target="_blank" rel="noopener">github.com/zxing/zxing</a></td><td>2023</td></tr>
+            <tr><td><strong>Django 5</strong></td><td>Framework web backend</td><td><a href="https://docs.djangoproject.com" target="_blank" rel="noopener">djangoproject.com</a></td><td>2024</td></tr>
+            <tr><td><strong>Chart.js</strong></td><td>Gráficas del dashboard</td><td><a href="https://www.chartjs.org" target="_blank" rel="noopener">chartjs.org</a></td><td>2024</td></tr>
+          </table>
+        </div>
+        <div class="help-section">
+          <div class="help-section-title"><i class="fa-solid fa-robot"></i> Inteligencia Artificial</div>
+          <table class="credits-table">
+            <tr><td><strong>Groq API</strong></td><td>Motor de inferencia LLM</td><td><a href="https://groq.com" target="_blank" rel="noopener">groq.com</a></td><td>2024</td></tr>
+            <tr><td><strong>LLaMA 3.1 8B Instant</strong></td><td>Modelo de lenguaje</td><td><a href="https://ai.meta.com/llama/" target="_blank" rel="noopener">ai.meta.com/llama</a></td><td>2024</td></tr>
+          </table>
+        </div>
+        <div class="help-section">
+          <div class="help-section-title"><i class="fa-solid fa-user-group"></i> Equipo de Desarrollo</div>
+          <table class="credits-table">
+            <tr><td colspan="4">Johan Sebastián Contreras Patiño</td></tr>
+            <tr><td colspan="4">Juan Diego Roca</td></tr>
+            <tr><td colspan="4">Jorge Luis Mojica Morales</td></tr>
+            <tr><td colspan="4">Juan Ricardo Gutiérrez González</td></tr>
+            <tr><td colspan="4"><em>Instructor: Fabián Álvarez — SENA Centro Minero, Ficha 3063723 — 2026</em></td></tr>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════
+     SCRIPTS
+     ══════════════════════════════════════════════════ -->
+<script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
+<script src="{% static 'js/confirmaciones.js' %}"></script>
+<script src="{% static 'js/alertas.js' %}"></script>
+
+<script>
+/* ── Sidebar toggle ── */
+document.addEventListener('DOMContentLoaded', function () {
+  var sidebar = document.getElementById('sidebar');
+  var btn     = document.getElementById('toggle-btn');
+  if (!btn || !sidebar) return;
+  if (localStorage.getItem('sidebar_collapsed') === '1') sidebar.classList.add('collapsed');
+  btn.addEventListener('click', function () {
+    sidebar.classList.toggle('collapsed');
+    localStorage.setItem('sidebar_collapsed', sidebar.classList.contains('collapsed') ? '1' : '0');
+  });
+});
+
+/* ── Submenu Productos — debe ser global ── */
+function toggleSubMenu(btn) {
+  var submenu = document.getElementById('submenu-productos');
+  if (!submenu) return;
+  var isOpen = submenu.classList.contains('open');
+  submenu.classList.toggle('open', !isOpen);
+  btn.classList.toggle('open', !isOpen);
+}
+
+/* ── Fix modal backdrop ── */
+document.addEventListener('show.bs.modal', function (e) {
+  if (!document.querySelector('.modal.show')) {
+    document.querySelectorAll('.modal-backdrop').forEach(function(b) { b.remove(); });
+    document.body.classList.remove('modal-open');
+    document.body.style.removeProperty('overflow');
+    document.body.style.removeProperty('padding-right');
+  }
+});
+document.addEventListener('hidden.bs.modal', function () {
+  setTimeout(function () {
+    if (!document.querySelector('.modal.show')) {
+      document.querySelectorAll('.modal-backdrop').forEach(function(b) { b.remove(); });
+      document.body.classList.remove('modal-open');
+      document.body.style.removeProperty('overflow');
+      document.body.style.removeProperty('padding-right');
+    }
+  }, 150);
+});
+</script>
+
+{% if request.user.is_authenticated %}
+<script>
+/* ── Notificaciones ── */
+(function () {
+  var notifBtn = document.getElementById('dropdownNotif');
+  var dropMenu = document.querySelector('ul.dropdown-menu[aria-labelledby="dropdownNotif"]');
+  if (!notifBtn || !dropMenu) return;
+
+  function getCookie(n) {
+    var m = document.cookie.match(new RegExp('(^|; )' + n + '=([^;]+)'));
+    return m ? decodeURIComponent(m[2]) : null;
+  }
+
+  function updateBadge(count) {
+    var badge = notifBtn.querySelector('.notif-badge');
+    if (count > 0) {
+      if (!badge) { badge = document.createElement('span'); badge.className = 'notif-badge'; notifBtn.appendChild(badge); }
+      badge.textContent = count;
+    } else if (badge) { badge.remove(); }
+  }
+
+  function renderDropdown(items) {
+    var hdr = '<li><h6 class="dropdown-header"><i class="fa-solid fa-bell me-1"></i> Notificaciones</h6></li>';
+    var clr = items.length ? '<li class="px-3 py-1 d-flex justify-content-between align-items-center"><span style="font-size:.76rem;color:var(--tx-muted);">' + items.length + ' pendiente' + (items.length > 1 ? 's' : '') + '</span><button type="button" class="btn btn-sm btn-secondary" id="clear-notifications" style="padding:3px 10px;font-size:.74rem;">Limpiar</button></li><li><hr class="dropdown-divider my-1"></li>' : '';
+    var rows = items.length
+      ? items.map(function(n) { return '<li><div class="dropdown-item d-flex justify-content-between align-items-center gap-2"><a href="' + (n.url||'#') + '" class="text-decoration-none flex-grow-1" style="white-space:normal;font-size:.83rem;color:var(--tx-primary);"><span class="me-1">' + (n.icono||'🔔') + '</span>' + (n.mensaje||'') + '</a><div class="d-flex gap-1 flex-shrink-0"><button class="btn btn-sm btn-icon-sq btn-secondary btn-read-notif" data-id="' + n.notif_id + '" title="Leída"><i class="fa-solid fa-check"></i></button><button class="btn btn-sm btn-icon-sq btn-danger btn-delete-notif" data-id="' + n.notif_id + '" title="Eliminar"><i class="fa-solid fa-trash"></i></button></div></div></li>'; }).join('')
+      : '<li><span class="dropdown-item-text text-center py-3" style="font-size:.83rem;color:var(--tx-muted);"><i class="fa-solid fa-circle-check me-1" style="color:var(--c-success);"></i>Sin notificaciones</span></li>';
+    var footer = '<li><hr class="dropdown-divider my-1"></li><li><a href="{% url "historial_notificaciones" %}" class="dropdown-item text-center" style="font-size:.8rem;color:var(--c-info);padding:8px;"><i class="fa-solid fa-clock-rotate-left me-1"></i> Ver historial completo</a></li>';
+    dropMenu.innerHTML = hdr + clr + rows + footer;
+  }
+
+  function refresh() {
+    fetch('{% url "notificaciones_data" %}')
+      .then(function(r) { return r.json(); })
+      .then(function(d) { if (d.ok) { updateBadge(d.total_notificaciones||0); renderDropdown(d.notificaciones||[]); } })
+      .catch(function(){});
+  }
+
+  notifBtn.addEventListener('click', refresh);
+
+  document.addEventListener('click', function (e) {
+    var clr = e.target.closest('#clear-notifications');
+    var rd  = e.target.closest('.btn-read-notif');
+    var del = e.target.closest('.btn-delete-notif');
+    var csrf = getCookie('csrftoken');
+    var headers = { 'Content-Type': 'application/json', 'X-CSRFToken': csrf };
+    if (clr) {
+      e.preventDefault();
+      fetch('{% url "limpiar_notificaciones" %}', { method:'POST', headers: headers }).then(function(r){ return r.json(); }).then(function(d){ if(d.ok){ updateBadge(0); renderDropdown([]); } }).catch(function(){});
+    } else if (rd) {
+      e.preventDefault();
+      fetch('/notificaciones/leer/'+rd.dataset.id+'/', { method:'POST', headers: headers }).then(function(r){ return r.json(); }).then(function(d){ if(d.ok) refresh(); }).catch(function(){});
+    } else if (del) {
+      e.preventDefault();
+      fetch('/notificaciones/eliminar/'+del.dataset.id+'/', { method:'POST', headers: headers }).then(function(r){ return r.json(); }).then(function(d){ if(d.ok) refresh(); }).catch(function(){});
+    }
+  });
+})();
+
+/* ── Chat IA con renderizado Markdown ── */
+(function () {
+  var chatBox   = document.getElementById('chat-box');
+  var chatInput = document.getElementById('user-input');
+  var sendBtn   = document.getElementById('chat-send-btn');
+  var chatWin   = document.getElementById('chat-window');
+  var chatBtnEl = document.getElementById('chat-btn');
+  if (!chatBox) return;
+
+  var HISTORY_KEY = 'ia_chat_history';
+  var isBusy = false;
+
+  function getCookieChat(n) {
+    return (document.cookie.split(';').map(function(c){ return c.trim(); }).find(function(c){ return c.startsWith(n+'='); })||'').split('=')[1]||'';
+  }
+
+  function renderMarkdown(text) {
+    return text
+      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+      .replace(/\*(.*?)\*/g, '<em>$1</em>')
+      .replace(/`([^`]+)`/g, '<code>$1</code>')
+      .replace(/^### (.+)$/gm, '<h4>$1</h4>')
+      .replace(/^## (.+)$/gm, '<h3>$1</h3>')
+      .replace(/^[•\-\*] (.+)$/gm, '<li>$1</li>')
+      .replace(/(<li>.*<\/li>\n?)+/gs, function(m){ return '<ul>' + m + '</ul>'; })
+      .replace(/^\d+\. (.+)$/gm, '<li>$1</li>')
+      .replace(/^---$/gm, '<hr>')
+      .replace(/\n\n+/g, '</p><p>')
+      .replace(/\n(?!<)/g, '<br>')
+      .replace(/^(?!<)/, '<p>')
+      .replace(/(?<!>)$/, '</p>')
+      .replace(/<p><\/p>/g, '')
+      .replace(/<p>(<ul>|<h[34]>|<hr>)/g, '$1')
+      .replace(/(<\/ul>|<\/h[34]>|<hr>)<\/p>/g, '$1');
+  }
+
+  function saveHistory() {
+    try {
+      var msgs = Array.from(chatBox.querySelectorAll('.chat-msg')).map(function(el) {
+        return { html: el.innerHTML, isUser: el.classList.contains('chat-msg-user') };
+      });
+      localStorage.setItem(HISTORY_KEY, JSON.stringify(msgs.slice(-30)));
+    } catch(e) {}
+  }
+
+  function loadHistory() {
+    try {
+      var msgs = JSON.parse(localStorage.getItem(HISTORY_KEY)) || [];
+      msgs.forEach(function(m) {
+        var d = document.createElement('div');
+        d.className = 'chat-msg ' + (m.isUser ? 'chat-msg-user' : 'chat-msg-bot');
+        d.innerHTML = m.html;
+        chatBox.appendChild(d);
+      });
+      if (msgs.length === 0) addWelcome();
+      chatBox.scrollTop = chatBox.scrollHeight;
+    } catch(e) { addWelcome(); }
+  }
+
+  function addWelcome() {
+    var d = document.createElement('div');
+    d.className = 'chat-msg chat-msg-bot';
+    d.innerHTML = renderMarkdown(
+      '¡Hola! 👋 Soy el asistente de **Tienda El Despecho**.\n\n' +
+      'Puedo ayudarte con información sobre:\n' +
+      '• **Productos** e inventario\n' +
+      '• **Ventas** y compras\n' +
+      '• **Clientes** y proveedores\n' +
+      '• **Stock bajo** y alertas\n\n' +
+      '¿En qué te puedo ayudar?'
+    );
+    chatBox.appendChild(d);
+    chatBox.scrollTop = chatBox.scrollHeight;
+  }
+
+  function addMessage(text, isUser) {
+    var d = document.createElement('div');
+    d.className = 'chat-msg ' + (isUser ? 'chat-msg-user' : 'chat-msg-bot');
+    if (isUser) { d.textContent = text; } else { d.innerHTML = renderMarkdown(text); }
+    chatBox.appendChild(d);
+    chatBox.scrollTop = chatBox.scrollHeight;
+    saveHistory();
+    return d;
+  }
+
+  function showTyping() {
+    var d = document.createElement('div');
+    d.className = 'chat-msg chat-msg-loading';
+    d.innerHTML = '<span></span>';
+    chatBox.appendChild(d);
+    chatBox.scrollTop = chatBox.scrollHeight;
+    return d;
+  }
+
+  function setBusy(v) {
+    isBusy = v;
+    if (sendBtn) sendBtn.disabled = v;
+    if (chatInput) chatInput.disabled = v;
+  }
+
+  window.sendMessage = async function () {
+    if (isBusy) return;
+    var msg = chatInput.value.trim();
+    if (!msg) return;
+    addMessage(msg, true);
+    chatInput.value = '';
+    var ld = showTyping();
+    setBusy(true);
+    try {
+      var res = await fetch('/ia/chat/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCookieChat('csrftoken') },
+        body: JSON.stringify({ message: msg })
+      });
+      var data = await res.json();
+      ld.remove();
+      addMessage(data.reply || 'Sin respuesta.', false);
+    } catch(e) {
+      ld.remove();
+      addMessage('⚠️ Error de conexión. Verifica que el sistema esté activo.', false);
+    }
+    setBusy(false);
+    chatInput.focus();
+  };
+
+  window.sendChip = function(btn) {
+    chatInput.value = btn.textContent.replace(/^[\p{Emoji}\s]+/u, '').trim();
+    sendMessage();
+  };
+
+  window.limpiarChat = function() {
+    chatBox.innerHTML = '';
+    try { localStorage.removeItem(HISTORY_KEY); } catch(e) {}
+    addWelcome();
+  };
+
+  window.toggleChat = function() {
+    var isOpen = chatWin.classList.toggle('open');
+    chatBtnEl.setAttribute('aria-expanded', isOpen);
+    if (isOpen) {
+      if (chatBox.children.length === 0) loadHistory();
+      setTimeout(function() { chatInput.focus(); }, 80);
+    }
+  };
+
+  (function () {
+    var btn = chatBtnEl;
+    if (!btn) return;
+    var dragging = false, sx, sy, ox = 0, oy = 0, cx = 0, cy = 0;
+    btn.addEventListener('mousedown', function(e) { dragging=true; sx=e.clientX-ox; sy=e.clientY-oy; btn.style.transition='none'; });
+    document.addEventListener('mouseup', function() { if(dragging){ ox=cx; oy=cy; dragging=false; btn.style.transition=''; } });
+    document.addEventListener('mousemove', function(e) {
+      if (!dragging) return;
+      cx=e.clientX-sx; cy=e.clientY-sy;
+      btn.style.transform='translate3d('+cx+'px,'+cy+'px,0)';
+    });
+    btn.addEventListener('click', function() { if (Math.abs(cx) < 5 && Math.abs(cy) < 5) toggleChat(); });
+  })();
+
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape' && chatWin.classList.contains('open')) {
+      chatWin.classList.remove('open');
+      chatBtnEl.focus();
+    }
+  });
+})();
+</script>
+{% endif %}
+
+{% if messages %}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  var msgs = [{% for m in messages %}{ tipo:"{{ m.tags }}", texto:"{{ m|escapejs }}" }{% if not forloop.last %},{% endif %}{% endfor %}];
+  var iconMap  = { success:'success', error:'error', warning:'warning', info:'info', debug:'info' };
+  var titleMap = { success:'¡Listo!', error:'¡Error!', warning:'¡Atención!', info:'¡Info!' };
+  var Toast = Swal.mixin({
+    toast:true, position:'bottom-end', showConfirmButton:false, timer:4000, timerProgressBar:true,
+    didOpen: function(t) { t.addEventListener('mouseenter', Swal.stopTimer); t.addEventListener('mouseleave', Swal.resumeTimer); }
+  });
+  msgs.forEach(function (m) {
+    var tipo = m.tipo || 'info';
+    if (tipo === 'success' || tipo === 'info') {
+      Toast.fire({ icon: iconMap[tipo], title: m.texto });
+    } else {
+      Swal.fire({ icon: iconMap[tipo]||'warning', title: titleMap[tipo]||'¡Atención!', text: m.texto, confirmButtonText:'Entendido', confirmButtonColor: tipo==='error'?'#dc3545':'#ffc107' });
+    }
+  });
+});
+</script>
+{% endif %}
+
+<!-- ── FIX GLOBAL: Limpieza de backdrop y scroll al cerrar cualquier modal ── -->
+<script>
+(function () {
+    // Se ejecuta cada vez que Bootstrap termina de ocultar un modal
+    document.addEventListener('hidden.bs.modal', function () {
+        // Si no hay otro modal abierto, limpiar backdrops residuales
+        var modalAbierto = document.querySelector('.modal.show');
+        if (!modalAbierto) {
+            document.querySelectorAll('.modal-backdrop').forEach(function (b) { b.remove(); });
+            document.body.classList.remove('modal-open');
+            document.body.style.removeProperty('overflow');
+            document.body.style.removeProperty('padding-right');
+        }
+    });
+})();
+</script>
+<script src="{% static 'js/animaciones.js' %}"></script>
+<script src="{% static 'js/accesibilidad.js' %}"></script>
+<script src="https://unpkg.com/@zxing/library@latest/umd/index.min.js"></script>
+{% block extra_js %}{% endblock %}
+
+<script>
+/* ── Modal de ayuda ── */
+function toggleHelp() {
+  var overlay = document.getElementById('help-overlay');
+  overlay.classList.toggle('open');
+  if (overlay.classList.contains('open')) {
+    document.getElementById('help-close-btn').focus();
+  }
+}
+
+function switchTab(tabId, btn) {
+  document.querySelectorAll('.help-tab-content').forEach(function(t) { t.classList.remove('active'); });
+  document.querySelectorAll('.help-tab').forEach(function(b) { b.classList.remove('active'); b.setAttribute('aria-selected', 'false'); });
+  document.getElementById('tab-' + tabId).classList.add('active');
+  btn.classList.add('active');
+  btn.setAttribute('aria-selected', 'true');
+}
+
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') {
+    var overlay = document.getElementById('help-overlay');
+    if (overlay && overlay.classList.contains('open')) toggleHelp();
+  }
+});
+
+document.getElementById('help-overlay').addEventListener('click', function(e) {
+  if (e.target === this) toggleHelp();
+});
+</script>
+
+<style>
+#help-btn { position:fixed;bottom:28px;left:28px;width:46px;height:46px;border-radius:50%;background:linear-gradient(135deg,var(--c-info),var(--c-info-d));color:#fff;border:none;font-size:20px;cursor:pointer;box-shadow:0 4px 16px rgba(41,128,185,0.45);z-index:9995;display:flex;align-items:center;justify-content:center;transition:transform var(--tr-base),box-shadow var(--tr-base); }
+#help-btn:hover { transform:scale(1.10);box-shadow:0 6px 22px rgba(41,128,185,0.65); }
+#help-btn:focus-visible { outline:3px solid var(--c-gold);outline-offset:3px; }
+#help-overlay { display:none;position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:9994;backdrop-filter:blur(4px);align-items:center;justify-content:center; }
+#help-overlay.open { display:flex; }
+#help-modal { background:var(--bg-card);border:1px solid var(--bd-default);border-radius:var(--r-lg);box-shadow:var(--sh-xl);width:min(780px,94vw);max-height:88vh;display:flex;flex-direction:column;overflow:hidden;animation:helpSlideIn 0.25s cubic-bezier(0.4,0,0.2,1); }
+@keyframes helpSlideIn { from{opacity:0;transform:translateY(24px) scale(0.97)} to{opacity:1;transform:translateY(0) scale(1)} }
+#help-header { display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--bd-default);flex-shrink:0; }
+#help-title { font-size:.97rem;font-weight:700;color:var(--tx-primary);letter-spacing:.01em; }
+#help-close-btn { background:transparent;border:none;color:var(--tx-secondary);font-size:1.1rem;cursor:pointer;padding:4px 8px;border-radius:var(--r-xs);transition:color var(--tr-fast),background var(--tr-fast); }
+#help-close-btn:hover { color:var(--c-danger);background:var(--c-danger-l); }
+#help-tabs { display:flex;gap:4px;padding:10px 16px 0;border-bottom:1px solid var(--bd-default);flex-shrink:0; }
+.help-tab { background:transparent;border:none;border-bottom:2px solid transparent;color:var(--tx-secondary);font-size:.83rem;font-weight:600;padding:6px 16px 10px;cursor:pointer;transition:color var(--tr-fast),border-color var(--tr-fast);border-radius:var(--r-xs) var(--r-xs) 0 0; }
+.help-tab:hover { color:var(--tx-primary); }
+.help-tab.active { color:var(--c-gold);border-bottom-color:var(--c-gold); }
+.help-tab-content { display:none;flex:1;overflow-y:auto; }
+.help-tab-content.active { display:block; }
+.help-body { padding:18px 22px 22px; }
+.help-intro { color:var(--tx-secondary);font-size:.84rem;margin-bottom:14px;line-height:1.6; }
+.help-section { margin-bottom:14px;background:var(--bg-glass);border:1px solid var(--bd-subtle);border-radius:var(--r-sm);overflow:hidden; }
+.help-section-title { background:var(--bg-glass-hover);color:var(--tx-primary);font-size:.83rem;font-weight:700;padding:8px 14px;border-bottom:1px solid var(--bd-subtle);letter-spacing:.01em; }
+.help-section-title i { color:var(--c-gold);margin-right:6px; }
+.help-section ul { margin:0;padding:10px 14px 10px 28px;color:var(--tx-secondary);font-size:.81rem;line-height:1.7; }
+.help-section ul li { margin-bottom:2px; }
+.help-section ul strong { color:var(--tx-primary); }
+.help-section code { background:rgba(255,255,255,0.07);border-radius:4px;padding:1px 5px;font-family:var(--font-mono);font-size:.78rem;color:var(--c-gold); }
+.help-download-btn { display:inline-flex;align-items:center;background:linear-gradient(135deg,#c0392b,#96281b);color:#fff;text-decoration:none;padding:9px 22px;border-radius:var(--r-full);font-size:.84rem;font-weight:600;box-shadow:0 4px 14px rgba(192,57,43,0.35);transition:transform var(--tr-fast),box-shadow var(--tr-fast); }
+.help-download-btn:hover { transform:translateY(-1px);box-shadow:0 6px 20px rgba(192,57,43,0.50);color:#fff; }
+.credits-table { width:100%;border-collapse:collapse;font-size:.8rem;color:var(--tx-secondary); }
+.credits-table td { padding:6px 12px;border-bottom:1px solid var(--bd-subtle);vertical-align:top; }
+.credits-table tr:last-child td { border-bottom:none; }
+.credits-table td:first-child { color:var(--tx-primary);font-weight:600;white-space:nowrap; }
+.credits-table a { color:var(--c-info);text-decoration:none; }
+.credits-table a:hover { text-decoration:underline; }
+@media (max-width:600px) { #help-modal{width:97vw;max-height:92vh} .credits-table td:nth-child(3),.credits-table td:nth-child(4){display:none} }
+</style>
+
+<script src="{% static 'js/fixes_sidebar_tooltips.js' %}"></script>
+<script src="{% static 'js/breadcrumb.js' %}"></script>
+</body>
+</html>

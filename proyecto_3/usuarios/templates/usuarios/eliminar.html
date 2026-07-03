@@ -1,0 +1,55 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Eliminar Usuario{% endblock %}
+
+{% block content %}
+
+<div class="page-header animate-slide-right">
+  <div class="page-header-left">
+    <div class="page-title">
+      <div class="page-title-icon" style="background:linear-gradient(135deg,var(--c-danger),#a93226);">
+        <i class="fa-solid fa-user-slash"></i>
+      </div>
+      Eliminar Usuario
+    </div>
+    <div class="page-subtitle">Esta acción no se puede deshacer</div>
+  </div>
+</div>
+
+<div class="row justify-content-center animate-fade-up">
+  <div class="col-12 col-md-6">
+    <div class="glass-card" style="border-color:rgba(231,76,60,0.25);">
+      <div class="glass-card-header" style="background:linear-gradient(135deg,rgba(231,76,60,0.15),rgba(231,76,60,0.05));">
+        <div class="glass-card-title" style="color:var(--c-danger);">
+          <i class="fa-solid fa-triangle-exclamation" style="color:var(--c-danger);"></i>
+          Confirmar eliminación
+        </div>
+      </div>
+      <div class="glass-card-body" style="text-align:center;padding:32px;">
+        <div style="width:72px;height:72px;border-radius:50%;background:var(--c-danger-l);border:2px solid var(--c-danger);display:flex;align-items:center;justify-content:center;margin:0 auto 20px;font-size:28px;color:var(--c-danger);">
+          <i class="fa-solid fa-user-slash"></i>
+        </div>
+        <p style="font-size:1rem;color:var(--tx-primary);margin-bottom:8px;">
+          ¿Eliminar al usuario <strong style="color:var(--c-gold);">{{ usuario.username }}</strong>?
+        </p>
+        <p style="font-size:.875rem;color:var(--tx-secondary);margin-bottom:28px;">
+          Se eliminará permanentemente junto con su perfil y foto.
+        </p>
+        <form method="post">
+          {% csrf_token %}
+          <div style="display:flex;justify-content:center;gap:12px;">
+            <a href="{% url 'usuarios:listar' %}" class="btn btn-secondary">
+              <i class="fa-solid fa-xmark"></i> Cancelar
+            </a>
+            <button type="submit" class="btn btn-danger">
+              <i class="fa-solid fa-trash"></i> Sí, eliminar
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
