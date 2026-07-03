@@ -6,6 +6,7 @@ ENV PYTHONUNBUFFERED=1
 RUN apt-get update && apt-get install -y \
     gcc \
     pkg-config \
+    default-libmysqlclient-dev \
     libcairo2-dev \
     libpango-1.0-0 \
     libpangocairo-1.0-0 \
@@ -23,6 +24,5 @@ COPY . .
 
 EXPOSE 8000
 
-# migrate y collectstatic se ejecutan al iniciar el contenedor (no en el build),
-# porque ahí sí hay acceso a la base de datos y a las variables de entorno de Render.
+
 CMD ["sh", "-c", "python manage.py migrate --noinput && python manage.py collectstatic --noinput && python manage.py runserver 0.0.0.0:8000"]
